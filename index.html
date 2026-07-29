@@ -165,6 +165,44 @@
   .pipe .on{background:var(--uconn-navy)}
   .pipe .stall{background:var(--red)}
 
+  /* ============ Tier II ============ */
+  .t2-hero{display:flex;align-items:flex-end;gap:44px;flex-wrap:wrap}
+  .t2-amount{
+    font-family:'Montserrat',sans-serif;font-weight:800;color:var(--uconn-navy);
+    font-size:clamp(40px,6vw,62px);line-height:1;font-variant-numeric:tabular-nums;
+  }
+  .t2-mid{
+    font-family:'Montserrat',sans-serif;font-weight:700;color:var(--uconn-navy);
+    font-size:22px;font-variant-numeric:tabular-nums;
+  }
+  .t2-cap{
+    font-family:'Montserrat',sans-serif;font-size:11.5px;font-weight:700;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--uconn-grey);
+  }
+  .t2-big .t2-cap{margin-top:6px}
+  .t2-side{display:flex;flex-direction:column;gap:8px;padding-bottom:4px}
+  .t2-chart svg{display:block;width:100%;max-width:860px;height:auto}
+  .t2-gaugebar{
+    position:relative;height:44px;background:#C3CCDB;max-width:860px;overflow:hidden;
+  }
+  .t2-gauge-spent{position:absolute;top:0;left:0;height:100%;background:var(--uconn-navy);transition:width .6s ease-out}
+  .t2-gauge-lbl{
+    position:absolute;top:50%;transform:translate(-50%,-50%);
+    font-family:'Montserrat',sans-serif;font-size:12.5px;font-weight:700;white-space:nowrap;
+  }
+  .t2-gauge-lbl.in{color:#FFFFFF}
+  .t2-gauge-lbl.out{color:var(--uconn-navy)}
+  .t2-gauge-axis{
+    display:flex;justify-content:space-between;max-width:860px;margin-top:6px;
+    font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:var(--uconn-grey);
+  }
+  .t2-piewrap{display:flex;align-items:center;gap:36px;flex-wrap:wrap}
+  #t2-pie svg{display:block;width:230px;height:230px}
+  .t2-legend{display:flex;flex-direction:column;gap:8px;min-width:260px}
+  .t2-legend .lg-row{display:flex;align-items:center;gap:10px;font-size:14px}
+  .t2-legend .lg-row .swatch{flex:none}
+  .t2-legend .lg-row .lg-amt{margin-left:auto;color:var(--uconn-grey);font-size:13px;font-variant-numeric:tabular-nums}
+
   /* ============ Footer (UConn navy) ============ */
   footer{background:var(--uconn-navy);color:#B9C1CE;margin-top:20px}
   .footer-inner{max-width:1100px;margin:0 auto;padding:30px 24px 40px;font-size:14px}
@@ -191,6 +229,7 @@
     <button role="tab" aria-selected="true"  data-tab="budget">Budget</button>
     <button role="tab" aria-selected="false" data-tab="senate">Senate Attendance</button>
     <button role="tab" aria-selected="false" data-tab="legislation">Legislation</button>
+    <button role="tab" aria-selected="false" data-tab="tier2">Tier II Funding</button>
   </div>
 </div>
 
@@ -246,6 +285,48 @@
         </table>
       </div>
     </div>
+  <!-- ============ TIER II FUNDING ============ -->
+  <section id="tab-tier2" role="tabpanel" hidden>
+    <div id="t2-setup" class="block" style="display:none">
+      <h2>Tier II Funding</h2>
+      <p class="desc">This section isn't connected yet. Create a tab in the spreadsheet named <strong>Tier2</strong> with the column headers <strong>Category, Amount, Notes</strong> in row 1 — one row per funding category, with the running total spent in Amount. Publish that tab as CSV and paste its URL into <code>DATA_SOURCES.tier2</code> in this file.</p>
+    </div>
+    <div id="t2-content" style="display:none">
+      <div class="block">
+        <h2>Tier II Funding — Spent to Date</h2>
+        <p class="desc">Total Tier II student organization funding disbursed this fiscal year, out of the $900,000 allocation. Summed live from the category totals in the spreadsheet.</p>
+        <div class="t2-hero">
+          <div class="t2-big">
+            <div id="t2-counter" class="t2-amount">$0</div>
+            <div class="t2-cap">spent to date</div>
+          </div>
+          <div class="t2-side">
+            <div><span id="t2-remaining" class="t2-mid">$0</span> <span class="t2-cap">remaining</span></div>
+            <div><span id="t2-pct" class="t2-mid">0%</span> <span class="t2-cap">of budget used</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="block">
+        <h2>Remaining Funds</h2>
+        <p class="desc">The $900,000 Tier II allocation: spent so far in navy, remaining in light blue — and below, the balance over time from the timeline log.</p>
+        <div id="t2-gauge"></div>
+        <div id="t2-timeline" class="t2-chart" style="margin-top:26px"></div>
+      </div>
+      <div class="block">
+        <h2>Spending by Category</h2>
+        <p class="desc">Share of Tier II spending by funding category.</p>
+        <div class="t2-piewrap">
+          <div id="t2-pie"></div>
+          <div id="t2-legend" class="t2-legend"></div>
+        </div>
+        <div class="table-wrap" style="margin-top:20px">
+          <table id="t2-table">
+            <thead><tr><th>Category</th><th style="text-align:right">Spent</th><th style="text-align:right">% of spending</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -253,7 +334,7 @@
   <div class="footer-inner">
     <p><strong>Undergraduate Student Government</strong> · Student Union Room 219, Storrs, CT</p>
     <p style="margin-top:6px">Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
-    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v8 — roster import + no-meetings display</span></p>
+    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v11 — Tier II timeline graph</span></p>
   </div>
 </footer>
 
@@ -267,10 +348,19 @@
    ===================================================================== */
 
 const USE_LIVE_DATA = true;
+
+/* Tier II allocation for the year. Change this one number if the
+   allocation changes. */
+const TIER2_BUDGET = 900000;
+
 const DATA_SOURCES = {
   budget:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=1576033671&single=true&output=csv",
   senate:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=1445517678&single=true&output=csv",
   legislation: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=173801048&single=true&output=csv",
+  /* Tier II tab: create a sheet tab named "Tier2" with headers
+     Date, Category, Amount, Notes in row 1, publish it as CSV,
+     and paste its URL here (it will have its own gid). */
+  tier2:       "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?output=csv",
   asOf:        "July 28, 2026"
 };
 
@@ -309,7 +399,22 @@ const SAMPLE = {
     {bill:"S26-14", title:"Reform Tier II funding appeal timeline",                  sponsor:"Okafor",  date:"2026-04-15", status:"implemented", note:"Internal bylaw change; effective FY27 funding cycle."},
     {bill:"S26-15", title:"Dining hall hours parity for regional campuses",          sponsor:"Johnson", date:"2026-04-22", status:"stalled",     note:"Dining Services declined citing staffing; revisiting in fall."},
     {bill:"S26-17", title:"Designated quiet study space in the Student Union",       sponsor:"Brooks",  date:"2026-04-29", status:"passed",      note:"Sent to Student Union admin; awaiting response."}
-  ]
+  ],
+  tier2: {
+    cats: [
+      {category:"Cultural", amount:97200},
+      {category:"Club Sports", amount:104100},
+      {category:"Academic & Professional", amount:60100},
+      {category:"Special Interest", amount:19750}
+    ],
+    timeline: [
+      {date:"2026-02-01", remaining:900000, t:new Date("2026-02-01").getTime()},
+      {date:"2026-03-01", remaining:812400, t:new Date("2026-03-01").getTime()},
+      {date:"2026-04-01", remaining:731900, t:new Date("2026-04-01").getTime()},
+      {date:"2026-05-01", remaining:668200, t:new Date("2026-05-01").getTime()},
+      {date:"2026-06-01", remaining:618850, t:new Date("2026-06-01").getTime()}
+    ]
+  }
 };
 
 /* ---------- CSV parser (returns raw rows) ---------- */
@@ -386,6 +491,12 @@ function mapLegislationRow(r){
     note:    r["Outcome note"],
   };
 }
+function mapTier2Row(r){
+  return {
+    category: (r["Category"]||"").trim(),
+    amount:   num(r["Amount"]),
+  };
+}
 
 async function loadData(){
   if(!USE_LIVE_DATA) return SAMPLE;
@@ -399,6 +510,25 @@ async function loadData(){
   const b = toObjects(bRaw, ["Category","Line item","Allocated","Spent"]);
   const s = toObjects(sRaw, ["Senator","Total meetings","Attended"]);
   const l = toObjects(lRaw, ["Bill #","Title","Status"]);
+
+  /* Tier II is fetched separately and tolerantly: if the tab isn't set up
+     yet or the fetch fails, tier2 stays null and only that section shows
+     a setup notice — the rest of the dashboard is unaffected. */
+  let t2 = null;
+  if(DATA_SOURCES.tier2 && !DATA_SOURCES.tier2.startsWith("PASTE")){
+    try{
+      const raw = await fetch(fresh(DATA_SOURCES.tier2), {cache:"no-store"}).then(r=>r.text()).then(parseCSVRows);
+      /* One tab, two blocks, parsed twice by header name:
+         categories from Category/Amount, timeline from Date/Remaining. */
+      const cats = toObjects(raw, ["Category","Amount"]).map(mapTier2Row)
+                     .filter(r=>r.category && r.amount>0);
+      const timeline = toObjects(raw, ["Date","Remaining"])
+        .map(r=>({date:(r["Date"]||"").trim(), remaining:num(r["Remaining"]), t:new Date((r["Date"]||"").trim()).getTime()}))
+        .filter(r=>r.date && !isNaN(r.t))
+        .sort((a,b)=>a.t-b.t);
+      t2 = {cats, timeline};
+    }catch(e){ console.error("Tier2 load failed:", e); t2 = null; }
+  }
   return {
     asOf: DATA_SOURCES.asOf,
     budget: b.map(mapBudgetRow).filter(r=>{
@@ -408,7 +538,8 @@ async function loadData(){
       return !!cat;
     }),
     senate: s.map(mapSenateRow).filter(r=>r.name),
-    legislation: l.map(mapLegislationRow).filter(r=>r.bill)
+    legislation: l.map(mapLegislationRow).filter(r=>r.bill),
+    tier2: t2
   };
 }
 
@@ -502,6 +633,106 @@ function renderSenate(d){
   }).join("");
 }
 
+/* ---------- Render: Tier II ---------- */
+const T2_COLORS = ["#000E2F","#1F5FD0","#7C878E","#5E8FBF","#3F4760","#2E7D46","#996A00","#A6382E","#94A7C4","#C3CCDB"];
+
+function renderTier2(d){
+  const setup = document.getElementById("t2-setup");
+  const content = document.getElementById("t2-content");
+  if(!d.tier2){ setup.style.display="block"; content.style.display="none"; return; }
+  setup.style.display="none"; content.style.display="block";
+
+  const rows = d.tier2.cats || [];
+  const timeline = d.tier2.timeline || [];
+  const total = rows.reduce((s,r)=>s+r.amount,0);
+  const remaining = Math.max(0, TIER2_BUDGET - total);
+
+  /* --- Counter (animated count-up) --- */
+  const counterEl = document.getElementById("t2-counter");
+  document.getElementById("t2-remaining").textContent = fmt$(remaining);
+  document.getElementById("t2-pct").textContent = pct(total, TIER2_BUDGET) + "%";
+  const dur = 900, t0 = performance.now();
+  (function tick(now){
+    const p = Math.min(1,(now-t0)/dur), ease = 1-Math.pow(1-p,3);
+    counterEl.textContent = fmt$(Math.round(total*ease));
+    if(p<1) requestAnimationFrame(tick);
+  })(t0);
+
+  /* --- Gauge: current spent vs remaining on the $900k bar --- */
+  const spentPct = Math.min(100, 100*total/TIER2_BUDGET);
+  document.getElementById("t2-gauge").innerHTML = `
+    <div class="t2-gaugebar">
+      <div class="t2-gauge-spent" style="width:${spentPct.toFixed(2)}%"></div>
+      ${spentPct>8 ? `<div class="t2-gauge-lbl in" style="left:${(spentPct/2).toFixed(2)}%">${fmt$(total)} spent</div>` : ""}
+      ${spentPct<92 ? `<div class="t2-gauge-lbl out" style="left:${((spentPct+100)/2).toFixed(2)}%">${fmt$(remaining)} remaining</div>` : ""}
+    </div>
+    <div class="t2-gauge-axis"><span>$0</span><span>${fmt$(TIER2_BUDGET)}</span></div>`;
+
+  /* --- Timeline line chart from the Date/Remaining log --- */
+  const lineEl = document.getElementById("t2-timeline");
+  if(timeline.length >= 2){
+    const W=860,H=300,padL=64,padR=16,padT=14,padB=34;
+    const iw=W-padL-padR, ih=H-padT-padB;
+    const tMin=timeline[0].t, tMax=timeline[timeline.length-1].t, span=Math.max(1,tMax-tMin);
+    const x=p=>padL + iw*(p.t-tMin)/span;
+    const y=v=>padT + ih*(1 - Math.min(v,TIER2_BUDGET)/TIER2_BUDGET);
+    const line = timeline.map((p,i)=>`${i?"L":"M"}${x(p).toFixed(1)},${y(p.remaining).toFixed(1)}`).join(" ");
+    const area = line + ` L${x(timeline[timeline.length-1]).toFixed(1)},${y(0)} L${x(timeline[0]).toFixed(1)},${y(0)} Z`;
+    const grid = [0,.25,.5,.75,1].map(f=>{
+      const v=TIER2_BUDGET*f, yy=y(v).toFixed(1);
+      return `<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="#E4E7EC" stroke-width="1"/>
+              <text x="${padL-8}" y="${+yy+4}" text-anchor="end" font-size="11" fill="#7C878E" font-family="Montserrat,sans-serif">$${Math.round(v/1000)}k</text>`;
+    }).join("");
+    lineEl.innerHTML = `
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Remaining Tier II funds over time">
+        ${grid}
+        <path d="${area}" fill="rgba(0,14,47,0.07)"/>
+        <path d="${line}" fill="none" stroke="#000E2F" stroke-width="2.5"/>
+        ${timeline.map(p=>`<circle cx="${x(p).toFixed(1)}" cy="${y(p.remaining).toFixed(1)}" r="3.5" fill="#000E2F"><title>${shortDate(p.t)}: ${fmt$(p.remaining)}</title></circle>`).join("")}
+        <text x="${padL}" y="${H-10}" font-size="11" fill="#7C878E" font-family="Montserrat,sans-serif">${shortDate(tMin)}</text>
+        <text x="${W-padR}" y="${H-10}" text-anchor="end" font-size="11" fill="#7C878E" font-family="Montserrat,sans-serif">${shortDate(tMax)}</text>
+      </svg>`;
+  } else {
+    lineEl.innerHTML = `<p class="desc" style="color:var(--uconn-grey)">The line graph appears once at least two dated entries exist in the timeline log (Date + Remaining columns of the Tier2 tab).</p>`;
+  }
+
+  /* --- Category donut + legend + table --- */
+  const cats={};
+  rows.forEach(r=>{ cats[r.category]=(cats[r.category]||0)+r.amount; });  /* merges any duplicate category rows */
+  if(total===0){
+    document.getElementById("t2-pie").innerHTML="";
+    document.getElementById("t2-legend").innerHTML=`<p class="desc" style="color:var(--uconn-grey)">No category totals recorded yet.</p>`;
+    document.querySelector("#t2-table tbody").innerHTML="";
+    return;
+  }
+  const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const R=80, CX=115, CY=115, SW=42, circ=2*Math.PI*R;
+  let off=0;
+  const slices = sorted.map(([name,amt],i)=>{
+    const frac=amt/total, len=frac*circ;
+    const s=`<circle cx="${CX}" cy="${CY}" r="${R}" fill="none"
+      stroke="${T2_COLORS[i%T2_COLORS.length]}" stroke-width="${SW}"
+      stroke-dasharray="${len.toFixed(2)} ${(circ-len).toFixed(2)}"
+      stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 ${CX} ${CY})"/>`;
+    off+=len; return s;
+  }).join("");
+  document.getElementById("t2-pie").innerHTML = `
+    <svg viewBox="0 0 230 230" role="img" aria-label="Tier II spending by category">
+      ${slices}
+      <text x="${CX}" y="${CY-4}" text-anchor="middle" font-size="17" font-weight="800" fill="#000E2F" font-family="Montserrat,sans-serif">${fmt$(total)}</text>
+      <text x="${CX}" y="${CY+15}" text-anchor="middle" font-size="10" fill="#7C878E" font-family="Montserrat,sans-serif" letter-spacing="1">SPENT</text>
+    </svg>`;
+  document.getElementById("t2-legend").innerHTML = sorted.map(([name,amt],i)=>`
+    <div class="lg-row"><span class="swatch" style="background:${T2_COLORS[i%T2_COLORS.length]}"></span>
+    <span>${name}</span><span class="lg-amt">${fmt$(amt)} · ${pct(amt,total)}%</span></div>`).join("");
+  document.querySelector("#t2-table tbody").innerHTML = sorted.map(([name,amt])=>`
+    <tr><td>${name}</td><td class="num" style="text-align:right">${fmt$(amt)}</td>
+    <td class="num" style="text-align:right">${pct(amt,total)}%</td></tr>`).join("");
+}
+function shortDate(t){
+  return new Date(t).toLocaleDateString("en-US",{month:"short",day:"numeric"});
+}
+
 /* ---------- Render: legislation ---------- */
 function pipeline(status){
   if(status==="stalled"){
@@ -529,6 +760,7 @@ document.querySelectorAll(".subnav [role=tab]").forEach(btn=>{
     document.querySelectorAll(".subnav [role=tab]").forEach(b=>b.setAttribute("aria-selected", b===btn));
     document.querySelectorAll("main section").forEach(s=>s.hidden = s.id!=="tab-"+btn.dataset.tab);
     if(btn.dataset.tab==="budget" && window.__data) renderBudget(window.__data);
+    if(btn.dataset.tab==="tier2" && window.__data) renderTier2(window.__data);
   });
 });
 
@@ -536,7 +768,7 @@ document.querySelectorAll(".subnav [role=tab]").forEach(btn=>{
 loadData().then(d=>{
   window.__data=d;
   document.getElementById("asof-text").textContent = "Data as of " + d.asOf;
-  renderStats(d); renderBudget(d); renderSenate(d); renderLegislation(d);
+  renderStats(d); renderBudget(d); renderSenate(d); renderLegislation(d); renderTier2(d);
 }).catch(err=>{
   document.getElementById("stat-row").innerHTML =
     `<div class="stat"><div class="label">Data unavailable</div><div class="sub">Could not load the published spreadsheets. Check the CSV URLs in DATA_SOURCES.</div></div>`;
