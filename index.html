@@ -103,16 +103,33 @@
   }
   .block > p.desc{color:#4B5563;font-size:15px;max-width:760px;margin:10px 0 20px}
 
-  /* ============ Bars ============ */
-  .bar-list{display:flex;flex-direction:column;gap:16px;max-width:860px}
-  .bar-item .bar-head{display:flex;justify-content:space-between;gap:12px;font-size:15px;margin-bottom:6px}
-  .bar-item .bar-head .amt{color:var(--uconn-grey);font-size:13.5px;font-variant-numeric:tabular-nums}
-  .track{height:16px;background:var(--grey-t);overflow:hidden;position:relative}
-  .fill{height:100%;background:var(--uconn-navy);width:0;transition:width .6s ease-out}
-  .fill.spent{position:absolute;top:0;left:0;background:var(--uconn-grey)}
+  /* ============ Budget bar chart ============ */
+  .bchart{display:flex;flex-direction:column;gap:0;max-width:960px;border-top:1px solid var(--line)}
+  .b-row{
+    display:grid;grid-template-columns:210px 1fr 200px;gap:16px;align-items:center;
+    padding:13px 0;border-bottom:1px solid var(--line);
+  }
+  .b-name{font-size:15px;font-weight:600;color:var(--ink);line-height:1.3}
+  .b-track{position:relative;height:24px;background:var(--grey-t)}
+  .b-alloc,.b-spent{position:absolute;top:0;left:0;height:100%;width:0;transition:width .5s ease-out}
+  .b-alloc{background:#C3CCDB}
+  .b-spent{background:var(--uconn-navy)}
+  .b-pct{
+    position:absolute;top:0;bottom:0;display:flex;align-items:center;
+    font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
+    padding-left:8px;color:var(--uconn-grey);white-space:nowrap;
+  }
+  .b-pct.on-fill{color:#FFFFFF;padding-left:0}
+  .b-vals{text-align:right;font-variant-numeric:tabular-nums;line-height:1.35}
+  .b-vals .spent-amt{font-family:'Montserrat',sans-serif;font-weight:700;color:var(--uconn-navy);font-size:15px}
+  .b-vals .alloc-amt{font-size:13px;color:var(--uconn-grey)}
   .legend{display:flex;gap:22px;margin-top:16px;font-size:13.5px;color:#4B5563}
   .legend span{display:inline-flex;align-items:center;gap:7px}
   .swatch{width:12px;height:12px;display:inline-block}
+  @media(max-width:720px){
+    .b-row{grid-template-columns:1fr;gap:6px;padding:14px 0}
+    .b-vals{text-align:left}
+  }
 
   /* ============ Tables ============ */
   .table-wrap{overflow-x:auto;border:1px solid var(--line)}
@@ -185,10 +202,10 @@
     <div class="block">
       <h2>FY26 Allocations by Category</h2>
       <p class="desc">Student activity fee funding allocated by USG and spending to date, drawn from the Funding Board ledger.</p>
-      <div class="bar-list" id="budget-bars"></div>
+      <div class="bchart" id="budget-bars"></div>
       <div class="legend">
-        <span><span class="swatch" style="background:var(--uconn-navy)"></span>Allocated</span>
-        <span><span class="swatch" style="background:var(--uconn-grey)"></span>Spent to date</span>
+        <span><span class="swatch" style="background:#C3CCDB"></span>Allocated</span>
+        <span><span class="swatch" style="background:var(--uconn-navy)"></span>Spent to date</span>
       </div>
     </div>
     <div class="block">
@@ -235,7 +252,7 @@
 <footer>
   <div class="footer-inner">
     <p><strong>Undergraduate Student Government</strong> · Student Union Room 219, Storrs, CT</p>
-    <p style="margin-top:6px">Maintained by the Office of the President. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
+    <p style="margin-top:6px">Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
     <p class="fine">Source spreadsheets are published publicly and feed this page directly.</p>
   </div>
 </footer>
@@ -423,16 +440,29 @@ function renderBudget(d){
     cats[r.category].allocated+=r.allocated;
     cats[r.category].spent+=r.spent;
   });
-  const max=Math.max(...Object.values(cats).map(c=>c.allocated));
-  const sorted = Object.entries(cats).sort((a,b)=>b[1].allocated-a[1].allocated); // largest allocation first
-  document.getElementById("budget-bars").innerHTML = sorted.map(([name,c])=>`
-    <div class="bar-item">
-      <div class="bar-head"><span>${name}</span><span class="amt">${fmt$(c.spent)} of ${fmt$(c.allocated)}</span></div>
-      <div class="track">
-        <div class="fill" data-w="${pct(c.allocated,max)}"></div>
-        <div class="fill spent" data-w="${pct(c.spent,max)}"></div>
+
+  /* Sort: largest allocation first, always */
+  const sorted = Object.entries(cats).sort((a,b)=>b[1].allocated-a[1].allocated);
+  const max = sorted.length ? sorted[0][1].allocated : 0;
+
+  document.getElementById("budget-bars").innerHTML = sorted.map(([name,c])=>{
+    const wAlloc = max ? (100*c.allocated/max) : 0;
+    const wSpent = max ? (100*c.spent/max) : 0;
+    const used   = pct(c.spent,c.allocated);
+    return `
+    <div class="b-row">
+      <div class="b-name">${name}</div>
+      <div class="b-track">
+        <div class="b-alloc" data-w="${wAlloc.toFixed(2)}"></div>
+        <div class="b-spent" data-w="${wSpent.toFixed(2)}"></div>
+        <div class="b-pct" data-l="${wSpent.toFixed(2)}">${used}% used</div>
       </div>
-    </div>`).join("");
+      <div class="b-vals">
+        <div class="spent-amt">${fmt$(c.spent)}</div>
+        <div class="alloc-amt">of ${fmt$(c.allocated)} allocated</div>
+      </div>
+    </div>`;
+  }).join("");
 
   document.querySelector("#budget-table tbody").innerHTML = d.budget.map(r=>`
     <tr><td>${r.category}</td><td>${r.item}</td>
@@ -440,8 +470,16 @@ function renderBudget(d){
     <td class="num" style="text-align:right">${fmt$(r.spent)}</td>
     <td class="num" style="text-align:right">${pct(r.spent,r.allocated)}%</td></tr>`).join("");
 
+  /* Animate bar widths and place the % label just after the spent fill.
+     If the fill is nearly full, cap the label position and flip it to
+     white-on-navy so it never runs off the end of the track. */
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    document.querySelectorAll(".fill").forEach(el=>el.style.width=el.dataset.w+"%");
+    document.querySelectorAll(".b-alloc,.b-spent").forEach(el=>el.style.width=el.dataset.w+"%");
+    document.querySelectorAll(".b-pct").forEach(el=>{
+      const l = parseFloat(el.dataset.l);
+      if(l > 72){ el.style.left = "auto"; el.style.right = "8px"; el.classList.add("on-fill"); }
+      else el.style.left = l + "%";
+    });
   }));
 }
 
