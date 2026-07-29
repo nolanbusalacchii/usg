@@ -214,6 +214,49 @@
     padding:12px 16px;margin:14px auto;max-width:1060px;font-size:13.5px;
   }
 
+  /* ============ Events ============ */
+  .ev-month{
+    font-family:'Montserrat',sans-serif;font-size:12.5px;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--uconn-grey);
+    margin:26px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line);
+  }
+  .ev-month:first-child{margin-top:0}
+  .ev-row{
+    display:grid;grid-template-columns:64px 1fr;gap:18px;align-items:start;
+    padding:14px 0;border-bottom:1px solid var(--line);max-width:860px;
+  }
+  .ev-row:last-child{border-bottom:0}
+  .ev-badge{
+    background:var(--uconn-navy);color:#FFFFFF;text-align:center;
+    padding:8px 0 9px;line-height:1.05;
+  }
+  .ev-badge .d{font-family:'Montserrat',sans-serif;font-weight:800;font-size:24px;display:block}
+  .ev-badge .m{font-family:'Montserrat',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.12em;display:block;margin-top:2px;color:#C9CFDA}
+  .ev-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:16.5px;color:var(--uconn-navy);line-height:1.3}
+  .ev-meta{margin-top:3px;font-size:13.5px;color:var(--uconn-grey);font-weight:600}
+  .ev-meta .sep{margin:0 7px;opacity:.6}
+  .ev-desc{margin-top:5px;font-size:14.5px;color:#4B5563;max-width:640px}
+  .ev-row.next{background:var(--blue-t);margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px;border-bottom:0}
+  .ev-next-chip{
+    display:inline-block;margin-left:10px;vertical-align:2px;
+    font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;
+    background:var(--uconn-navy);color:#fff;padding:3px 8px;text-transform:uppercase;
+  }
+  .ev-empty{color:var(--uconn-grey);font-size:15px}
+  #ev-past-details summary{
+    cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:700;
+    color:var(--uconn-grey);font-size:14px;letter-spacing:.04em;
+    padding:10px 0;list-style-position:inside;
+  }
+  #ev-past-details summary:hover{color:var(--uconn-navy)}
+  #ev-past .ev-badge{background:var(--grey-t);color:#4B5563}
+  #ev-past .ev-badge .m{color:var(--uconn-grey)}
+  #ev-past .ev-title{color:#4B5563}
+  @media(max-width:520px){
+    .ev-row{grid-template-columns:52px 1fr;gap:12px}
+    .ev-badge .d{font-size:20px}
+  }
+
   /* ============ Footer (UConn navy) ============ */
   footer{background:var(--uconn-navy);color:#B9C1CE;margin-top:20px}
   .footer-inner{max-width:1100px;margin:0 auto;padding:30px 24px 40px;font-size:14px}
@@ -241,6 +284,7 @@
     <button role="tab" aria-selected="false" data-tab="senate">Senate Attendance</button>
     <button role="tab" aria-selected="false" data-tab="legislation">Legislation</button>
     <button role="tab" aria-selected="false" data-tab="tier2">Tier II Funding</button>
+    <button role="tab" aria-selected="false" data-tab="events">Events</button>
   </div>
 </div>
 
@@ -342,13 +386,34 @@
     </div>
     <div id="t2-diag" class="t2-diag">Waiting for live data… If this message never changes, the page's data load failed before reaching this section — check that the three main spreadsheet URLs are still published.</div>
   </section>
+
+  <!-- ============ EVENTS ============ -->
+  <section id="tab-events" role="tabpanel" hidden>
+    <div id="ev-setup" class="block">
+      <h2>USG Events</h2>
+      <p class="desc">This section isn't connected yet. Create a tab in the spreadsheet named <strong>Events</strong> with the column headers <strong>Date, Event, Time, Location, Description</strong> in row 1 (or import the pre-built tab), publish that tab as CSV, and paste its URL into <code>DATA_SOURCES.events</code> in this file.</p>
+    </div>
+    <div id="ev-content" style="display:none">
+      <div class="block">
+        <h2>Upcoming Events</h2>
+        <p class="desc">USG meetings, programs, and deadlines. Updated from the Events tab of the public records spreadsheet.</p>
+        <div id="ev-upcoming"></div>
+      </div>
+      <div class="block" id="ev-past-block">
+        <details id="ev-past-details">
+          <summary id="ev-past-summary">Past events</summary>
+          <div id="ev-past"></div>
+        </details>
+      </div>
+    </div>
+  </section>
 </main>
 
 <footer>
   <div class="footer-inner">
     <p><strong>Undergraduate Student Government</strong> · Student Union Room 219, Storrs, CT</p>
     <p style="margin-top:6px">Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
-    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v14 — section nesting fix</span></p>
+    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v15 — events + sorted line items</span></p>
   </div>
 </footer>
 
@@ -375,6 +440,10 @@ const DATA_SOURCES = {
      Date, Category, Amount, Notes in row 1, publish it as CSV,
      and paste its URL here (it will have its own gid). */
   tier2:       "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=1041912330&single=true&output=csv",
+  /* Events tab: import the pre-built Events tab (or create one with headers
+     Date, Event, Time, Location, Description), publish it as CSV, and paste
+     its URL here. */
+  events:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=1814470009&single=true&output=csv",
   asOf:        "July 28, 2026"
 };
 
@@ -428,7 +497,14 @@ const SAMPLE = {
       {date:"2026-05-01", remaining:668200, t:new Date("2026-05-01").getTime()},
       {date:"2026-06-01", remaining:618850, t:new Date("2026-06-01").getTime()}
     ]
-  }
+  },
+  events: [
+    {date:"2026-04-22", event:"Spring Involvement Fair", time:"11:00 AM – 2:00 PM", location:"Fairfield Way", desc:"Tabling for 100+ student organizations."},
+    {date:"2026-08-28", event:"First Senate Meeting of Fall 2026", time:"6:30 PM", location:"Student Union 304", desc:"Open to all students. Public comment period at the start of the agenda."},
+    {date:"2026-09-04", event:"Tier II Funding Workshop", time:"5:00 PM", location:"Student Union 322", desc:"Required for org treasurers requesting fall funding."},
+    {date:"2026-09-18", event:"Town Hall with the President's Office", time:"7:00 PM", location:"Konover Auditorium", desc:"Bring questions on housing, dining, and transportation."},
+    {date:"2026-10-02", event:"Funding Application Deadline — Fall Cycle", time:"11:59 PM", location:"Online", desc:"Late applications roll to the spring cycle."}
+  ]
 };
 
 /* ---------- CSV parser (returns raw rows) ---------- */
@@ -565,6 +641,24 @@ async function loadData(){
     }catch(e){ console.error("Tier2 load failed:", e); diag.http = diag.http || ("fetch failed: "+e.message); t2 = null; }
   }
   window.__t2diag = diag;
+
+  /* Events: same independent, tolerant pattern as Tier II. */
+  let ev = null;
+  if(DATA_SOURCES.events && !DATA_SOURCES.events.startsWith("PASTE")){
+    try{
+      const raw = await fetch(fresh(DATA_SOURCES.events), {cache:"no-store"}).then(r=>{
+        if(!r.ok) throw new Error("HTTP "+r.status);
+        return r.text();
+      }).then(parseCSVRows);
+      ev = toObjects(raw, ["Date","Event"]).map(r=>({
+        date:(r["Date"]||"").trim(),
+        event:(r["Event"]||"").trim(),
+        time:(r["Time"]||"").trim(),
+        location:(r["Location"]||"").trim(),
+        desc:(r["Description"]||"").trim(),
+      })).filter(r=>r.event && r.date);
+    }catch(e){ reportError("Events data failed to load ("+e.message+") — check the published Events CSV URL."); ev = null; }
+  }
   return {
     asOf: DATA_SOURCES.asOf,
     budget: b.map(mapBudgetRow).filter(r=>{
@@ -575,7 +669,8 @@ async function loadData(){
     }),
     senate: s.map(mapSenateRow).filter(r=>r.name),
     legislation: l.map(mapLegislationRow).filter(r=>r.bill),
-    tier2: t2
+    tier2: t2,
+    events: ev
   };
 }
 
@@ -631,7 +726,9 @@ function renderBudget(d){
     </div>`;
   }).join("");
 
-  document.querySelector("#budget-table tbody").innerHTML = d.budget.map(r=>`
+  document.querySelector("#budget-table tbody").innerHTML = [...d.budget]
+    .sort((a,b)=>b.allocated-a.allocated)
+    .map(r=>`
     <tr><td>${r.category}</td><td>${r.item}</td>
     <td class="num" style="text-align:right">${fmt$(r.allocated)}</td>
     <td class="num" style="text-align:right">${fmt$(r.spent)}</td>
@@ -788,6 +885,57 @@ function shortDate(t){
   return new Date(t).toLocaleDateString("en-US",{month:"short",day:"numeric"});
 }
 
+/* ---------- Render: events ---------- */
+function evRow(e, isNext){
+  const d = new Date(e.t);
+  const day = d.getDate();
+  const mon = d.toLocaleDateString("en-US",{month:"short"}).toUpperCase();
+  const meta = [e.time, e.location].filter(Boolean).join(`<span class="sep">·</span>`);
+  return `<div class="ev-row${isNext ? " next" : ""}">
+    <div class="ev-badge"><span class="d">${day}</span><span class="m">${mon}</span></div>
+    <div>
+      <div class="ev-title">${e.event}${isNext ? `<span class="ev-next-chip">Next</span>` : ""}</div>
+      ${meta ? `<div class="ev-meta">${meta}</div>` : ""}
+      ${e.desc ? `<div class="ev-desc">${e.desc}</div>` : ""}
+    </div>
+  </div>`;
+}
+function renderEvents(d){
+  const setup = document.getElementById("ev-setup");
+  const content = document.getElementById("ev-content");
+  if(!setup || !content) return;
+  if(!d.events){ setup.style.display="block"; content.style.display="none"; return; }
+  setup.style.display="none"; content.style.display="block";
+
+  const withT = d.events.map(e=>({...e, t: e.t ?? new Date(e.date).getTime()}))
+                        .filter(e=>!isNaN(e.t))
+                        .sort((a,b)=>a.t-b.t);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const upcoming = withT.filter(e=>e.t >= today.getTime());
+  const past = withT.filter(e=>e.t < today.getTime()).reverse(); // most recent first
+
+  const upEl = document.getElementById("ev-upcoming");
+  if(!upcoming.length){
+    upEl.innerHTML = `<p class="ev-empty">No upcoming events posted yet — check back soon.</p>`;
+  } else {
+    let html="", lastMonth="";
+    upcoming.forEach((e,i)=>{
+      const m = new Date(e.t).toLocaleDateString("en-US",{month:"long",year:"numeric"});
+      if(m!==lastMonth){ html += `<div class="ev-month">${m}</div>`; lastMonth=m; }
+      html += evRow(e, i===0);
+    });
+    upEl.innerHTML = html;
+  }
+
+  const pastBlock = document.getElementById("ev-past-block");
+  if(!past.length){ pastBlock.style.display="none"; }
+  else{
+    pastBlock.style.display="block";
+    document.getElementById("ev-past-summary").textContent = `Past events (${past.length})`;
+    document.getElementById("ev-past").innerHTML = past.map(e=>evRow(e,false)).join("");
+  }
+}
+
 /* ---------- Render: legislation ---------- */
 function pipeline(status){
   if(status==="stalled"){
@@ -832,7 +980,7 @@ window.addEventListener("error", e=>reportError("Script error: " + e.message));
 loadData().then(d=>{
   window.__data=d;
   document.getElementById("asof-text").textContent = "Data as of " + d.asOf;
-  [["Stats",renderStats],["Budget",renderBudget],["Senate",renderSenate],["Legislation",renderLegislation],["Tier II",renderTier2]]
+  [["Stats",renderStats],["Budget",renderBudget],["Senate",renderSenate],["Legislation",renderLegislation],["Tier II",renderTier2],["Events",renderEvents]]
     .forEach(([name,fn])=>{
       try{ fn(d); }
       catch(e){ reportError(name+" section failed to render: "+e.message); console.error(e); }
