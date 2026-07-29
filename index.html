@@ -239,7 +239,7 @@ const USE_LIVE_DATA = false;
 const DATA_SOURCES = {
   budget:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTIOa1myMII1ntSJKAQhWCyrUbcVHG6kpCzty_H8BUf7KpmkSOtzfAqMpzbBulcCe5jm2F4fN_uAhGE/pub?output=csv",
   senate:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vSdpFc4gRWj4oaCO-l1VOvzG6x46pLO6LIkwj882-ALdSIu1RtxzmRGxbMlG0PtPIfC2SndzffmQXum/pub?output=csv",
-  legislation: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTcaKwOO41MNn1fyCVARsaagM9VjZMU_waP_vnBA2SC-vO3nHANt6J2gZ3mL3XxS_RiJnec-Xwtg8vD/pub?output=csvE",
+  legislation: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTcaKwOO41MNn1fyCVARsaagM9VjZMU_waP_vnBA2SC-vO3nHANt6J2gZ3mL3XxS_RiJnec-Xwtg8vD/pub?output=csv",
   asOf:        "July 28, 2026"
 };
 
@@ -297,6 +297,44 @@ function parseCSV(text){
   return body.filter(r=>r.length>1).map(r=>Object.fromEntries(head.map((h,i)=>[h.trim(),(r[i]||"").trim()])));
 }
 
+/* Strips $, commas, and stray whitespace before parsing a number.
+   Handles cells that come back from Sheets as "$412,000" or " 361500 ". */
+function num(v){
+  const n = parseFloat(String(v ?? "").replace(/[^0-9.\-]/g,""));
+  return isNaN(n) ? 0 : n;
+}
+
+/* Maps the human-readable column headers used in the actual Google Sheets
+   templates to the short internal field names the render functions use.
+   If you rename a column in Sheets, update the matching key here. */
+function mapBudgetRow(r){
+  return {
+    category:  r["Category"],
+    item:      r["Line item"],
+    allocated: num(r["Allocated"]),
+    spent:     num(r["Spent"]),
+  };
+}
+function mapSenateRow(r){
+  return {
+    name:         r["Senator"],
+    constituency: r["Constituency"],
+    committee:    r["Committee"],
+    total:        num(r["Total meetings"]),
+    attended:     num(r["Attended"]),
+  };
+}
+function mapLegislationRow(r){
+  return {
+    bill:    r["Bill #"],
+    title:   r["Title"],
+    sponsor: r["Sponsor"],
+    date:    r["Date passed"],
+    status:  (r["Status"] || "").toLowerCase().replace(/\s+/g,"").replace("adminresponded","responded"),
+    note:    r["Outcome note"],
+  };
+}
+
 async function loadData(){
   if(!USE_LIVE_DATA) return SAMPLE;
   const [b,s,l]=await Promise.all(
@@ -305,9 +343,9 @@ async function loadData(){
   );
   return {
     asOf: DATA_SOURCES.asOf,
-    budget: b.map(r=>({...r, allocated:+r.allocated, spent:+r.spent})),
-    senate: s.map(r=>({...r, attended:+r.attended, total:+r.total})),
-    legislation: l
+    budget: b.map(mapBudgetRow).filter(r=>r.category),
+    senate: s.map(mapSenateRow).filter(r=>r.name),
+    legislation: l.map(mapLegislationRow).filter(r=>r.bill)
   };
 }
 
