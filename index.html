@@ -253,7 +253,7 @@
   <div class="footer-inner">
     <p><strong>Undergraduate Student Government</strong> · Student Union Room 219, Storrs, CT</p>
     <p style="margin-top:6px">Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
-    <p class="fine">Source spreadsheets are published publicly and feed this page directly.</p>
+    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v8 — roster import + no-meetings display</span></p>
   </div>
 </footer>
 
@@ -485,11 +485,17 @@ function renderBudget(d){
 
 /* ---------- Render: senate ---------- */
 function renderSenate(d){
-  const rows=[...d.senate].sort((a,b)=>pct(b.attended,b.total)-pct(a.attended,a.total));
+  const rows=[...d.senate].sort((a,b)=>
+    pct(b.attended,b.total)-pct(a.attended,a.total) || a.name.localeCompare(b.name));
   document.querySelector("#senate-table tbody").innerHTML = rows.map(r=>{
+    if(!r.total){  /* no meetings recorded yet — show neutral dash, not a red 0% */
+      return `<tr><td>${r.name}</td><td>${r.constituency}</td><td>${r.committee||""}</td>
+        <td class="num" style="text-align:right">—</td>
+        <td style="color:var(--uconn-grey);font-size:13px">No meetings recorded yet</td></tr>`;
+    }
     const p=pct(r.attended,r.total);
     const color = p>=80 ? "var(--green)" : p>=60 ? "var(--amber)" : "var(--red)";
-    return `<tr><td>${r.name}</td><td>${r.constituency}</td><td>${r.committee}</td>
+    return `<tr><td>${r.name}</td><td>${r.constituency}</td><td>${r.committee||""}</td>
       <td class="num" style="text-align:right">${r.attended}/${r.total}</td>
       <td><span class="att-track"><span class="att-fill" style="width:${p}%;background:${color}"></span></span>
       <span class="num" style="margin-left:9px">${p}%</span></td></tr>`;
