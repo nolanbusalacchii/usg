@@ -203,6 +203,17 @@
   .t2-legend .lg-row .swatch{flex:none}
   .t2-legend .lg-row .lg-amt{margin-left:auto;color:var(--uconn-grey);font-size:13px;font-variant-numeric:tabular-nums}
 
+  .t2-diag{
+    margin-top:8px;padding:12px 14px;background:#F5F6F7;border:1px solid var(--line);
+    font-size:12.5px;color:#4B5563;line-height:1.7;max-width:860px;
+  }
+  .t2-diag .ok{color:var(--green);font-weight:600}
+  .t2-diag .bad{color:var(--red);font-weight:600}
+  .err-banner{
+    background:#F8E5E2;border:1px solid var(--red);color:#7A2A22;
+    padding:12px 16px;margin:14px auto;max-width:1060px;font-size:13.5px;
+  }
+
   /* ============ Footer (UConn navy) ============ */
   footer{background:var(--uconn-navy);color:#B9C1CE;margin-top:20px}
   .footer-inner{max-width:1100px;margin:0 auto;padding:30px 24px 40px;font-size:14px}
@@ -327,6 +338,7 @@
         </div>
       </div>
     </div>
+    <div id="t2-diag" class="t2-diag"></div>
   </section>
 </main>
 
@@ -334,7 +346,7 @@
   <div class="footer-inner">
     <p><strong>Undergraduate Student Government</strong> · Student Union Room 219, Storrs, CT</p>
     <p style="margin-top:6px">Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
-    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v11 — Tier II timeline graph</span></p>
+    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v12 — self-diagnostics</span></p>
   </div>
 </footer>
 
@@ -515,20 +527,32 @@ async function loadData(){
      yet or the fetch fails, tier2 stays null and only that section shows
      a setup notice — the rest of the dashboard is unaffected. */
   let t2 = null;
+  const diag = {configured:false, url:"", http:"", headerCats:false, headerTl:false, catCount:0, tlCount:0, firstLine:"", hint:""};
   if(DATA_SOURCES.tier2 && !DATA_SOURCES.tier2.startsWith("PASTE")){
+    diag.configured = true;
+    diag.url = DATA_SOURCES.tier2;
+    if(!/gid=/.test(DATA_SOURCES.tier2)) diag.hint = "URL has no gid= — this is the 'Entire Document' link, which exports only the first tab. Republish selecting the Tier2 tab specifically.";
     try{
-      const raw = await fetch(fresh(DATA_SOURCES.tier2), {cache:"no-store"}).then(r=>r.text()).then(parseCSVRows);
-      /* One tab, two blocks, parsed twice by header name:
-         categories from Category/Amount, timeline from Date/Remaining. */
-      const cats = toObjects(raw, ["Category","Amount"]).map(mapTier2Row)
-                     .filter(r=>r.category && r.amount>0);
-      const timeline = toObjects(raw, ["Date","Remaining"])
+      const resp = await fetch(fresh(DATA_SOURCES.tier2), {cache:"no-store"});
+      diag.http = resp.status + (resp.ok ? " OK" : " ERROR");
+      const raw = await resp.text().then(parseCSVRows);
+      diag.firstLine = (raw[0]||[]).join(", ").slice(0,120);
+      const catsObjs = toObjects(raw, ["Category","Amount"]);
+      const tlObjs = toObjects(raw, ["Date","Remaining"]);
+      diag.headerCats = catsObjs.length>0 || raw.some(r=>r.map(c=>String(c).trim()).includes("Category") && r.map(c=>String(c).trim()).includes("Amount"));
+      diag.headerTl = tlObjs.length>0 || raw.some(r=>r.map(c=>String(c).trim()).includes("Date") && r.map(c=>String(c).trim()).includes("Remaining"));
+      if(!diag.headerCats && raw.some(r=>r.map(c=>String(c).trim()).includes("Allocated")))
+        diag.hint = "This URL is serving the Budget tab, not Tier2 — republish and select the Tier2 tab in the first dropdown.";
+      const cats = catsObjs.map(mapTier2Row).filter(r=>r.category && r.amount>0);
+      const timeline = tlObjs
         .map(r=>({date:(r["Date"]||"").trim(), remaining:num(r["Remaining"]), t:new Date((r["Date"]||"").trim()).getTime()}))
         .filter(r=>r.date && !isNaN(r.t))
         .sort((a,b)=>a.t-b.t);
+      diag.catCount = cats.length; diag.tlCount = timeline.length;
       t2 = {cats, timeline};
-    }catch(e){ console.error("Tier2 load failed:", e); t2 = null; }
+    }catch(e){ console.error("Tier2 load failed:", e); diag.http = diag.http || ("fetch failed: "+e.message); t2 = null; }
   }
+  window.__t2diag = diag;
   return {
     asOf: DATA_SOURCES.asOf,
     budget: b.map(mapBudgetRow).filter(r=>{
@@ -639,6 +663,25 @@ const T2_COLORS = ["#000E2F","#1F5FD0","#7C878E","#5E8FBF","#3F4760","#2E7D46","
 function renderTier2(d){
   const setup = document.getElementById("t2-setup");
   const content = document.getElementById("t2-content");
+  const diagEl = document.getElementById("t2-diag");
+  if(!setup || !content){ reportError("Tier II section markup is missing (t2-setup/t2-content) — the deployed index.html may be incomplete."); return; }
+
+  /* Diagnostics readout — always shown, plain-language status of each step */
+  const dg = window.__t2diag;
+  if(diagEl){
+    if(!dg){
+      diagEl.innerHTML = `<strong>Status:</strong> showing local sample data (USE_LIVE_DATA is off).`;
+    } else {
+      const yn = b => b ? `<span class="ok">yes</span>` : `<span class="bad">no</span>`;
+      diagEl.innerHTML = `<strong>Connection status</strong> (for troubleshooting)<br>
+        Tier2 URL configured: ${yn(dg.configured)}${dg.configured ? ` · Fetch: ${dg.http||"—"}` : ""}<br>
+        ${dg.configured ? `Found "Category/Amount" headers: ${yn(dg.headerCats)} · rows read: ${dg.catCount}<br>
+        Found "Date/Remaining" headers: ${yn(dg.headerTl)} · timeline entries: ${dg.tlCount}<br>` : ""}
+        ${dg.hint ? `<span class="bad">→ ${dg.hint}</span><br>` : ""}
+        ${dg.configured && dg.firstLine ? `First line of the CSV being received: <em>${dg.firstLine}</em>` : ""}`;
+    }
+  }
+
   if(!d.tier2){ setup.style.display="block"; content.style.display="none"; return; }
   setup.style.display="none"; content.style.display="block";
 
@@ -764,11 +807,24 @@ document.querySelectorAll(".subnav [role=tab]").forEach(btn=>{
   });
 });
 
+/* ---------- Visible error reporting (no console needed) ---------- */
+function reportError(msg){
+  const b = document.createElement("div");
+  b.className = "err-banner";
+  b.textContent = "⚠ " + msg;
+  document.querySelector("main")?.prepend(b);
+}
+window.addEventListener("error", e=>reportError("Script error: " + e.message));
+
 /* ---------- Init ---------- */
 loadData().then(d=>{
   window.__data=d;
   document.getElementById("asof-text").textContent = "Data as of " + d.asOf;
-  renderStats(d); renderBudget(d); renderSenate(d); renderLegislation(d); renderTier2(d);
+  [["Stats",renderStats],["Budget",renderBudget],["Senate",renderSenate],["Legislation",renderLegislation],["Tier II",renderTier2]]
+    .forEach(([name,fn])=>{
+      try{ fn(d); }
+      catch(e){ reportError(name+" section failed to render: "+e.message); console.error(e); }
+    });
 }).catch(err=>{
   document.getElementById("stat-row").innerHTML =
     `<div class="stat"><div class="label">Data unavailable</div><div class="sub">Could not load the published spreadsheets. Check the CSV URLs in DATA_SOURCES.</div></div>`;
