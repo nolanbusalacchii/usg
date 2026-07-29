@@ -235,11 +235,11 @@
    the sample objects (category, item, allocated, spent, ... etc).
    ===================================================================== */
 
-const USE_LIVE_DATA = true;
+const USE_LIVE_DATA = false;
 const DATA_SOURCES = {
   budget:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTIOa1myMII1ntSJKAQhWCyrUbcVHG6kpCzty_H8BUf7KpmkSOtzfAqMpzbBulcCe5jm2F4fN_uAhGE/pub?output=csv",
   senate:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vSdpFc4gRWj4oaCO-l1VOvzG6x46pLO6LIkwj882-ALdSIu1RtxzmRGxbMlG0PtPIfC2SndzffmQXum/pub?output=csv",
-  legislation: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTcaKwOO41MNn1fyCVARsaagM9VjZMU_waP_vnBA2SC-vO3nHANt6J2gZ3mL3XxS_RiJnec-Xwtg8vD/pub?output=csv",
+  legislation: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTcaKwOO41MNn1fyCVARsaagM9VjZMU_waP_vnBA2SC-vO3nHANt6J2gZ3mL3XxS_RiJnec-Xwtg8vD/pub?output=csvE",
   asOf:        "July 28, 2026"
 };
 
@@ -414,3 +414,5 @@ loadData().then(d=>{
   console.error(err);
 });
 </script>
+</body>
+</html>
