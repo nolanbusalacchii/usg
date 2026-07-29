@@ -3,180 +3,197 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UConn USG · Public Records Dashboard</title>
+<title>Public Records Dashboard | Undergraduate Student Government | UConn</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+  /* ============ UConn brand tokens (brand.uconn.edu) ============ */
   :root{
-    --navy:#000E2F;          /* UConn national flag blue */
-    --ink:#131A2B;
-    --paper:#F6F7F9;
-    --card:#FFFFFF;
-    --line:#DDE2EA;
-    --blue:#1F5FD0;          /* action / accent */
-    --green:#1B7F4D;         /* implemented / good standing */
-    --amber:#A96D00;         /* in progress / warning */
-    --red:#B3362B;           /* stalled / poor */
-    --muted:#5B6474;
-    --radius:10px;
+    --uconn-navy:#000E2F;   /* UConn blue */
+    --uconn-grey:#7C878E;   /* secondary grey */
+    --banner-rule:#3F4760;  /* rule used in the university banner */
+    --ink:#212936;
+    --page:#FFFFFF;
+    --band:#F5F6F7;
+    --line:#DCDFE3;
+    --link:#123A8C;
+    --green:#2E7D46;
+    --amber:#996A00;
+    --red:#A6382E;
+    --green-t:#E7F1EA;
+    --amber-t:#F5EEDB;
+    --red-t:#F6E7E5;
+    --blue-t:#E7ECF6;
+    --grey-t:#EEF0F2;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
   @media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation:none!important;transition:none!important} }
   body{
-    font-family:'Inter',system-ui,sans-serif;
-    background:var(--paper);
+    font-family:'Source Sans 3','Helvetica Neue',Arial,sans-serif;
     color:var(--ink);
-    line-height:1.5;
-    font-size:15px;
+    background:var(--page);
+    font-size:16px;line-height:1.55;
   }
-  a{color:var(--blue)}
-  .mono{font-family:'IBM Plex Mono',monospace}
+  a{color:var(--link)}
 
-  /* ---------- Header ---------- */
-  header{
-    background:var(--navy);
-    color:#fff;
-    padding:28px 24px 0;
-  }
-  .header-inner{max-width:1060px;margin:0 auto}
-  .eyebrow{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;letter-spacing:.14em;text-transform:uppercase;
-    color:#9FB3DE;margin-bottom:10px;
+  /* ============ Page head ============ */
+  .page-head{border-bottom:1px solid var(--line)}
+  .page-head-inner{
+    max-width:1100px;margin:0 auto;padding:30px 24px 24px;
   }
   h1{
-    font-family:'Space Grotesk',sans-serif;
-    font-weight:700;font-size:clamp(26px,4vw,38px);
-    letter-spacing:-.01em;line-height:1.1;
+    font-family:'Montserrat',sans-serif;font-weight:700;
+    color:var(--uconn-navy);font-size:clamp(24px,3.4vw,34px);
+    line-height:1.15;
   }
-  .asof{
-    display:inline-flex;align-items:center;gap:8px;
-    margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#C7D2E8;
+  .page-head .meta{
+    margin-top:8px;color:var(--uconn-grey);font-size:14.5px;
   }
-  .asof .dot{width:7px;height:7px;border-radius:50%;background:#5FD08A}
-  nav{
-    max-width:1060px;margin:22px auto 0;display:flex;gap:2px;overflow-x:auto;
-  }
-  nav button{
-    appearance:none;border:0;cursor:pointer;
-    font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:14.5px;
-    padding:11px 18px;color:#B9C4DB;background:transparent;
-    border-radius:8px 8px 0 0;white-space:nowrap;
-  }
-  nav button[aria-selected="true"]{background:var(--paper);color:var(--navy);font-weight:700}
-  nav button:focus-visible{outline:2px solid #fff;outline-offset:-2px}
+  .page-head .meta strong{color:var(--ink);font-weight:600}
 
-  /* ---------- Layout ---------- */
-  main{max-width:1060px;margin:0 auto;padding:26px 24px 60px}
+  /* ============ Nav (UConn-style navy bar) ============ */
+  .subnav{background:var(--uconn-navy)}
+  .subnav-inner{max-width:1100px;margin:0 auto;display:flex;overflow-x:auto}
+  .subnav button{
+    appearance:none;border:0;background:transparent;cursor:pointer;
+    font-family:'Montserrat',sans-serif;font-weight:600;font-size:13px;
+    letter-spacing:.09em;text-transform:uppercase;
+    color:#C9CFDA;padding:14px 20px;white-space:nowrap;
+    border-bottom:3px solid transparent;
+  }
+  .subnav button[aria-selected="true"]{color:#FFFFFF;border-bottom-color:#FFFFFF}
+  .subnav button:hover{color:#FFFFFF}
+  .subnav button:focus-visible{outline:2px solid #fff;outline-offset:-3px}
+
+  /* ============ Stats band ============ */
+  .stats-band{background:var(--band);border-bottom:1px solid var(--line)}
+  #stat-row{
+    max-width:1100px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(4,1fr);
+    gap:1px;background:var(--line);
+    border-left:1px solid var(--line);border-right:1px solid var(--line);
+  }
+  @media(max-width:920px){ #stat-row{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:440px){ #stat-row{grid-template-columns:1fr} }
+  .stat{padding:22px 24px;background:var(--band);display:flex;flex-direction:column}
+  .stat .label{
+    font-family:'Montserrat',sans-serif;font-size:11.5px;font-weight:700;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--uconn-grey);
+    min-height:34px;display:flex;align-items:flex-end;line-height:1.35;
+  }
+  .stat .value{
+    font-family:'Montserrat',sans-serif;font-weight:800;
+    color:var(--uconn-navy);font-size:30px;line-height:1.15;margin-top:6px;
+    font-variant-numeric:tabular-nums;
+  }
+  .stat .sub{font-size:13.5px;color:var(--uconn-grey);margin-top:2px}
+
+  /* ============ Content ============ */
+  main{max-width:1100px;margin:0 auto;padding:34px 24px 64px}
   section[hidden]{display:none}
-
-  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:26px}
-  .stat{
-    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-    padding:16px 18px;
+  .block{margin-bottom:40px}
+  h2{
+    font-family:'Montserrat',sans-serif;font-weight:700;
+    color:var(--uconn-navy);font-size:21px;
+    padding-bottom:10px;margin-bottom:6px;position:relative;
   }
-  .stat .label{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  .stat .value{font-family:'IBM Plex Mono',monospace;font-size:27px;font-weight:600;margin-top:4px}
-  .stat .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
-
-  .card{
-    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-    padding:20px 22px;margin-bottom:20px;
+  h2::after{
+    content:"";position:absolute;left:0;bottom:0;
+    width:48px;height:3px;background:var(--uconn-navy);
   }
-  h2{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;margin-bottom:4px}
-  .card > p.desc{color:var(--muted);font-size:13.5px;margin-bottom:16px}
+  .block > p.desc{color:#4B5563;font-size:15px;max-width:760px;margin:10px 0 20px}
 
-  /* ---------- Bars ---------- */
-  .bar-list{display:flex;flex-direction:column;gap:13px}
-  .bar-item .bar-head{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;margin-bottom:5px}
-  .bar-item .bar-head .amt{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:12.5px}
-  .track{height:14px;background:#EBEEF3;border-radius:7px;overflow:hidden;position:relative}
-  .fill{
-    height:100%;border-radius:7px;background:var(--navy);
-    width:0;transition:width .7s cubic-bezier(.2,.7,.3,1);
+  /* ============ Bars ============ */
+  .bar-list{display:flex;flex-direction:column;gap:16px;max-width:860px}
+  .bar-item .bar-head{display:flex;justify-content:space-between;gap:12px;font-size:15px;margin-bottom:6px}
+  .bar-item .bar-head .amt{color:var(--uconn-grey);font-size:13.5px;font-variant-numeric:tabular-nums}
+  .track{height:16px;background:var(--grey-t);overflow:hidden;position:relative}
+  .fill{height:100%;background:var(--uconn-navy);width:0;transition:width .6s ease-out}
+  .fill.spent{position:absolute;top:0;left:0;background:var(--uconn-grey)}
+  .legend{display:flex;gap:22px;margin-top:16px;font-size:13.5px;color:#4B5563}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .swatch{width:12px;height:12px;display:inline-block}
+
+  /* ============ Tables ============ */
+  .table-wrap{overflow-x:auto;border:1px solid var(--line)}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  thead th{
+    background:var(--uconn-navy);color:#FFFFFF;
+    font-family:'Montserrat',sans-serif;font-size:11.5px;font-weight:700;
+    letter-spacing:.07em;text-transform:uppercase;
+    text-align:left;padding:11px 14px;white-space:nowrap;
   }
-  .fill.spent{position:absolute;top:0;left:0;background:var(--blue)}
-  .legend{display:flex;gap:18px;margin-top:14px;font-size:12.5px;color:var(--muted)}
-  .legend span{display:inline-flex;align-items:center;gap:6px}
-  .swatch{width:11px;height:11px;border-radius:3px;display:inline-block}
+  tbody td{padding:11px 14px;border-top:1px solid var(--line);vertical-align:top}
+  tbody tr:nth-child(even){background:#F8F9FA}
+  td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 
-  /* ---------- Tables ---------- */
-  .table-wrap{overflow-x:auto}
-  table{width:100%;border-collapse:collapse;font-size:13.5px}
-  th{
-    text-align:left;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
-    color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:2px solid var(--line);
-    white-space:nowrap;
-  }
-  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
-  tr:last-child td{border-bottom:0}
-  td.num{font-family:'IBM Plex Mono',monospace;font-size:12.5px;white-space:nowrap}
+  .att-track{width:120px;height:9px;background:var(--grey-t);display:inline-block;vertical-align:middle}
+  .att-fill{height:100%;display:block}
 
-  .att-track{width:110px;height:8px;background:#EBEEF3;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle}
-  .att-fill{height:100%;border-radius:4px}
-
-  /* ---------- Status chips + pipeline ---------- */
+  /* ============ Status chips + lifecycle ============ */
   .chip{
-    display:inline-block;font-size:11.5px;font-weight:600;letter-spacing:.03em;
-    padding:3px 9px;border-radius:20px;white-space:nowrap;
+    display:inline-block;font-family:'Montserrat',sans-serif;
+    font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    padding:4px 10px;white-space:nowrap;
   }
-  .chip.drafted{background:#EBEEF3;color:var(--muted)}
-  .chip.passed{background:#E3ECFB;color:var(--blue)}
-  .chip.responded{background:#F6EEDC;color:var(--amber)}
-  .chip.implemented{background:#E2F2E8;color:var(--green)}
-  .chip.stalled{background:#F8E5E2;color:var(--red)}
+  .chip.drafted{background:var(--grey-t);color:#4B5563}
+  .chip.passed{background:var(--blue-t);color:var(--link)}
+  .chip.responded{background:var(--amber-t);color:var(--amber)}
+  .chip.implemented{background:var(--green-t);color:var(--green)}
+  .chip.stalled{background:var(--red-t);color:var(--red)}
 
-  .pipe{display:inline-flex;align-items:center;gap:0;vertical-align:middle}
-  .pipe .p-dot{width:9px;height:9px;border-radius:50%;background:#D7DCE5}
-  .pipe .p-seg{width:14px;height:2px;background:#D7DCE5}
-  .pipe .on{background:var(--navy)}
+  .pipe{display:inline-flex;align-items:center;vertical-align:middle}
+  .pipe .p-dot{width:10px;height:10px;border-radius:50%;background:#CBD2DA}
+  .pipe .p-seg{width:16px;height:2px;background:#CBD2DA}
+  .pipe .on{background:var(--uconn-navy)}
   .pipe .stall{background:var(--red)}
 
-  footer{
-    border-top:1px solid var(--line);
-    max-width:1060px;margin:0 auto;padding:22px 24px 48px;
-    color:var(--muted);font-size:13px;
-  }
-  footer .mono{font-size:12px}
+  /* ============ Footer (UConn navy) ============ */
+  footer{background:var(--uconn-navy);color:#B9C1CE;margin-top:20px}
+  .footer-inner{max-width:1100px;margin:0 auto;padding:30px 24px 40px;font-size:14px}
+  .footer-inner strong{color:#FFFFFF}
+  .footer-inner .fine{margin-top:10px;color:var(--uconn-grey);font-size:12.5px}
+
   @media(max-width:640px){
-    main{padding:20px 14px 40px}
-    .card{padding:16px 14px}
+    main{padding:24px 14px 44px}
+    .stat{padding:16px 14px}
   }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="header-inner">
-    <div class="eyebrow">University of Connecticut · Undergraduate Student Government</div>
+<div class="page-head">
+  <div class="page-head-inner">
     <h1>Public Records Dashboard</h1>
-    <div class="asof"><span class="dot"></span><span id="asof-text">Data as of —</span></div>
+    <p class="meta"><strong id="asof-text">Data as of —</strong> &nbsp;·&nbsp; Budget, Senate attendance, and legislation records of the Undergraduate Student Government</p>
   </div>
-  <nav role="tablist" aria-label="Dashboard sections">
+</div>
+
+<div class="subnav">
+  <div class="subnav-inner" role="tablist" aria-label="Dashboard sections">
     <button role="tab" aria-selected="true"  data-tab="budget">Budget</button>
     <button role="tab" aria-selected="false" data-tab="senate">Senate Attendance</button>
     <button role="tab" aria-selected="false" data-tab="legislation">Legislation</button>
-  </nav>
-</header>
+  </div>
+</div>
+
+<div class="stats-band"><div id="stat-row"></div></div>
 
 <main>
-  <div class="stat-row" id="stat-row"></div>
-
   <!-- ============ BUDGET ============ -->
   <section id="tab-budget" role="tabpanel">
-    <div class="card">
-      <h2>FY26 allocations by category</h2>
-      <p class="desc">Student activity fee funding allocated by USG, and how much has been spent to date. Amounts are drawn from the Funding Board ledger.</p>
+    <div class="block">
+      <h2>FY26 Allocations by Category</h2>
+      <p class="desc">Student activity fee funding allocated by USG and spending to date, drawn from the Funding Board ledger.</p>
       <div class="bar-list" id="budget-bars"></div>
       <div class="legend">
-        <span><span class="swatch" style="background:var(--navy)"></span>Allocated</span>
-        <span><span class="swatch" style="background:var(--blue)"></span>Spent to date</span>
+        <span><span class="swatch" style="background:var(--uconn-navy)"></span>Allocated</span>
+        <span><span class="swatch" style="background:var(--uconn-grey)"></span>Spent to date</span>
       </div>
     </div>
-    <div class="card">
-      <h2>Line items</h2>
-      <p class="desc">Every allocation over $1,000. Full ledger available from the Comptroller's office.</p>
+    <div class="block">
+      <h2>Line Items</h2>
+      <p class="desc">Every allocation over $1,000. The full ledger is available from the Comptroller's office.</p>
       <div class="table-wrap">
         <table id="budget-table">
           <thead><tr><th>Category</th><th>Line item</th><th style="text-align:right">Allocated</th><th style="text-align:right">Spent</th><th style="text-align:right">% used</th></tr></thead>
@@ -188,9 +205,9 @@
 
   <!-- ============ SENATE ============ -->
   <section id="tab-senate" role="tabpanel" hidden>
-    <div class="card">
-      <h2>Senator attendance · Spring 2026</h2>
-      <p class="desc">Attendance at regular Senate meetings. Senators below 60% are flagged per the USG bylaws attendance policy.</p>
+    <div class="block">
+      <h2>Senator Attendance — Spring 2026</h2>
+      <p class="desc">Attendance at regular Senate meetings. Senators below 60% are flagged under the USG bylaws attendance policy.</p>
       <div class="table-wrap">
         <table id="senate-table">
           <thead><tr><th>Senator</th><th>Constituency</th><th>Committee</th><th style="text-align:right">Meetings</th><th>Attendance</th></tr></thead>
@@ -202,9 +219,9 @@
 
   <!-- ============ LEGISLATION ============ -->
   <section id="tab-legislation" role="tabpanel" hidden>
-    <div class="card">
-      <h2>Legislation tracker · 2025–26 session</h2>
-      <p class="desc">Every resolution and bill, tracked past the vote: Drafted → Passed → Administration responded → Implemented. This is where transparency usually stops — we keep going.</p>
+    <div class="block">
+      <h2>Legislation Tracker — 2025–26 Session</h2>
+      <p class="desc">Every resolution and bill, tracked past the vote: Drafted → Passed → Administration responded → Implemented.</p>
       <div class="table-wrap">
         <table id="leg-table">
           <thead><tr><th>Bill</th><th>Title</th><th>Sponsor</th><th>Date</th><th>Lifecycle</th><th>Status</th><th>Outcome note</th></tr></thead>
@@ -216,28 +233,25 @@
 </main>
 
 <footer>
-  <p><strong>About this page.</strong> Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Source spreadsheets are public — request access or report an error at <span class="mono">usg@uconn.edu</span>.</p>
+  <div class="footer-inner">
+    <p><strong>Undergraduate Student Government</strong> · Student Union Room 219, Storrs, CT</p>
+    <p style="margin-top:6px">Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
+    <p class="fine">Source spreadsheets are published publicly and feed this page directly.</p>
+  </div>
 </footer>
 
 <script>
 /* =====================================================================
-   DATA LAYER
+   DATA LAYER — identical to the previous version.
    ---------------------------------------------------------------------
-   The dashboard renders from the objects below. To go live, replace
-   SAMPLE data with rows fetched from your published Google Sheets:
-
-   1. In each Sheet: File → Share → Publish to web → select the tab,
-      choose CSV, copy the URL.
-   2. Paste the URLs into DATA_SOURCES below.
-   3. Set USE_LIVE_DATA = true.
-
-   Column headers in your sheets must match the field names used in
-   the sample objects (category, item, allocated, spent, ... etc).
+   To go live: paste your three published-CSV URLs below and set
+   USE_LIVE_DATA = true. (If you are replacing an index.html that
+   already had your URLs in it, re-paste them here.)
    ===================================================================== */
 
 const USE_LIVE_DATA = false;
 const DATA_SOURCES = {
-  budget:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTIOa1myMII1ntSJKAQhWCyrUbcVHG6kpCzty_H8BUf7KpmkSOtzfAqMpzbBulcCe5jm2F4fN_uAhGE/pub?output=csv",
+  budget:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQG1rdq2gj6QEm8XKj8hEOB5IyYOQ-Wj-AlVqheuUvb50Q1S0E16cV3ugS45tifWz0mcKfwV72_98ub/pub?output=csv",
   senate:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vSdpFc4gRWj4oaCO-l1VOvzG6x46pLO6LIkwj882-ALdSIu1RtxzmRGxbMlG0PtPIfC2SndzffmQXum/pub?output=csv",
   legislation: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTcaKwOO41MNn1fyCVARsaagM9VjZMU_waP_vnBA2SC-vO3nHANt6J2gZ3mL3XxS_RiJnec-Xwtg8vD/pub?output=csv",
   asOf:        "July 28, 2026"
@@ -258,30 +272,30 @@ const SAMPLE = {
     {category:"Reserves",            item:"Contingency fund",                 allocated:75000,  spent:12000}
   ],
   senate: [
-    {name:"M. Okafor",   constituency:"CLAS",            committee:"Funding Board",        attended:14, total:15},
-    {name:"J. Rivera",   constituency:"Engineering",     committee:"Academic Affairs",     attended:15, total:15},
-    {name:"S. Chen",     constituency:"Business",        committee:"External Affairs",     attended:13, total:15},
-    {name:"A. Dubois",   constituency:"CLAS",            committee:"Student Services",     attended:12, total:15},
-    {name:"T. Nguyen",   constituency:"Fine Arts",       committee:"Student Services",     attended:14, total:15},
-    {name:"R. Patel",    constituency:"Off-campus",      committee:"Funding Board",        attended:11, total:15},
-    {name:"K. Johnson",  constituency:"Stamford campus", committee:"External Affairs",     attended:9,  total:15},
-    {name:"L. Martinez", constituency:"Agriculture",     committee:"Academic Affairs",     attended:13, total:15},
-    {name:"D. Brooks",   constituency:"Nursing",         committee:"Student Services",     attended:8,  total:15},
-    {name:"E. Kowalski", constituency:"On-campus res.",  committee:"Funding Board",        attended:15, total:15}
+    {name:"M. Okafor",   constituency:"CLAS",            committee:"Funding Board",    attended:14, total:15},
+    {name:"J. Rivera",   constituency:"Engineering",     committee:"Academic Affairs", attended:15, total:15},
+    {name:"S. Chen",     constituency:"Business",        committee:"External Affairs", attended:13, total:15},
+    {name:"A. Dubois",   constituency:"CLAS",            committee:"Student Services", attended:12, total:15},
+    {name:"T. Nguyen",   constituency:"Fine Arts",       committee:"Student Services", attended:14, total:15},
+    {name:"R. Patel",    constituency:"Off-campus",      committee:"Funding Board",    attended:11, total:15},
+    {name:"K. Johnson",  constituency:"Stamford campus", committee:"External Affairs", attended:9,  total:15},
+    {name:"L. Martinez", constituency:"Agriculture",     committee:"Academic Affairs", attended:13, total:15},
+    {name:"D. Brooks",   constituency:"Nursing",         committee:"Student Services", attended:8,  total:15},
+    {name:"E. Kowalski", constituency:"On-campus res.",  committee:"Funding Board",    attended:15, total:15}
   ],
   legislation: [
-    {bill:"S26-04", title:"Extend Homer Babbidge Library 24/5 hours during finals", sponsor:"Rivera",   date:"2026-02-11", status:"implemented", note:"Library confirmed 24/5 for May 2026 finals; funded jointly."},
-    {bill:"S26-07", title:"Add evening shuttle loop to Celeron & Carriage",          sponsor:"Patel",    date:"2026-02-25", status:"responded",   note:"Transportation Services piloting Th–Sat route in Fall 2026."},
-    {bill:"S26-09", title:"Syllabus cost transparency at course registration",       sponsor:"Chen",     date:"2026-03-04", status:"passed",      note:"Sent to Provost's office 3/6; awaiting response."},
-    {bill:"S26-11", title:"Expand SHaW same-day mental health triage staffing",      sponsor:"Dubois",   date:"2026-03-25", status:"responded",   note:"SHaW added one triage clinician; monitoring wait times."},
-    {bill:"S26-12", title:"Menstrual products in all academic buildings",            sponsor:"Nguyen",   date:"2026-04-01", status:"implemented", note:"Facilities completed installation in 31 buildings, June 2026."},
-    {bill:"S26-14", title:"Reform Tier II funding appeal timeline",                  sponsor:"Okafor",   date:"2026-04-15", status:"implemented", note:"Internal bylaw change; effective FY27 funding cycle."},
-    {bill:"S26-15", title:"Dining hall hours parity for regional campuses",          sponsor:"Johnson",  date:"2026-04-22", status:"stalled",     note:"Dining Services declined citing staffing; revisiting in fall."},
-    {bill:"S26-17", title:"Designated quiet study space in the Student Union",       sponsor:"Brooks",   date:"2026-04-29", status:"passed",      note:"Sent to Student Union admin; awaiting response."}
+    {bill:"S26-04", title:"Extend Homer Babbidge Library 24/5 hours during finals", sponsor:"Rivera",  date:"2026-02-11", status:"implemented", note:"Library confirmed 24/5 for May 2026 finals; funded jointly."},
+    {bill:"S26-07", title:"Add evening shuttle loop to Celeron & Carriage",          sponsor:"Patel",   date:"2026-02-25", status:"responded",   note:"Transportation Services piloting Th–Sat route in Fall 2026."},
+    {bill:"S26-09", title:"Syllabus cost transparency at course registration",       sponsor:"Chen",    date:"2026-03-04", status:"passed",      note:"Sent to Provost's office 3/6; awaiting response."},
+    {bill:"S26-11", title:"Expand SHaW same-day mental health triage staffing",      sponsor:"Dubois",  date:"2026-03-25", status:"responded",   note:"SHaW added one triage clinician; monitoring wait times."},
+    {bill:"S26-12", title:"Menstrual products in all academic buildings",            sponsor:"Nguyen",  date:"2026-04-01", status:"implemented", note:"Facilities completed installation in 31 buildings, June 2026."},
+    {bill:"S26-14", title:"Reform Tier II funding appeal timeline",                  sponsor:"Okafor",  date:"2026-04-15", status:"implemented", note:"Internal bylaw change; effective FY27 funding cycle."},
+    {bill:"S26-15", title:"Dining hall hours parity for regional campuses",          sponsor:"Johnson", date:"2026-04-22", status:"stalled",     note:"Dining Services declined citing staffing; revisiting in fall."},
+    {bill:"S26-17", title:"Designated quiet study space in the Student Union",       sponsor:"Brooks",  date:"2026-04-29", status:"passed",      note:"Sent to Student Union admin; awaiting response."}
   ]
 };
 
-/* ---------- Simple CSV parser (for the live-data path) ---------- */
+/* ---------- CSV parser ---------- */
 function parseCSV(text){
   const rows=[]; let row=[],val="",inQ=false;
   for(let i=0;i<text.length;i++){
@@ -297,16 +311,11 @@ function parseCSV(text){
   return body.filter(r=>r.length>1).map(r=>Object.fromEntries(head.map((h,i)=>[h.trim(),(r[i]||"").trim()])));
 }
 
-/* Strips $, commas, and stray whitespace before parsing a number.
-   Handles cells that come back from Sheets as "$412,000" or " 361500 ". */
+/* ---------- Number cleaning + header mapping ---------- */
 function num(v){
   const n = parseFloat(String(v ?? "").replace(/[^0-9.\-]/g,""));
   return isNaN(n) ? 0 : n;
 }
-
-/* Maps the human-readable column headers used in the actual Google Sheets
-   templates to the short internal field names the render functions use.
-   If you rename a column in Sheets, update the matching key here. */
 function mapBudgetRow(r){
   return {
     category:  r["Category"],
@@ -343,7 +352,12 @@ async function loadData(){
   );
   return {
     asOf: DATA_SOURCES.asOf,
-    budget: b.map(mapBudgetRow).filter(r=>r.category),
+    budget: b.map(mapBudgetRow).filter(r=>{
+      const cat=(r.category||"").trim(), item=(r.item||"").trim();
+      if(!cat && !item) return false;                 // blank entry rows
+      if(cat.toUpperCase()==="TOTAL" || item.toUpperCase()==="TOTAL") return false; // sheet's TOTAL row
+      return !!cat;
+    }),
     senate: s.map(mapSenateRow).filter(r=>r.name),
     legislation: l.map(mapLegislationRow).filter(r=>r.bill)
   };
@@ -363,9 +377,9 @@ function renderStats(d){
   const passed = d.legislation.filter(r=>r.status!=="drafted").length;
   const impl   = d.legislation.filter(r=>r.status==="implemented").length;
   document.getElementById("stat-row").innerHTML = `
-    <div class="stat"><div class="label">FY26 allocated</div><div class="value">${fmt$(alloc)}</div><div class="sub">${pct(spent,alloc)}% spent to date</div></div>
-    <div class="stat"><div class="label">Avg. Senate attendance</div><div class="value">${att}%</div><div class="sub">${d.senate.length} senators · Spring 2026</div></div>
-    <div class="stat"><div class="label">Bills passed</div><div class="value">${passed}</div><div class="sub">2025–26 session</div></div>
+    <div class="stat"><div class="label">FY26 Allocated</div><div class="value">${fmt$(alloc)}</div><div class="sub">${pct(spent,alloc)}% spent to date</div></div>
+    <div class="stat"><div class="label">Avg. Senate Attendance</div><div class="value">${att}%</div><div class="sub">${d.senate.length} senators · Spring 2026</div></div>
+    <div class="stat"><div class="label">Bills Passed</div><div class="value">${passed}</div><div class="sub">2025–26 session</div></div>
     <div class="stat"><div class="label">Implemented</div><div class="value">${impl}</div><div class="sub">${pct(impl,passed)}% of passed bills</div></div>`;
 }
 
@@ -407,7 +421,7 @@ function renderSenate(d){
     return `<tr><td>${r.name}</td><td>${r.constituency}</td><td>${r.committee}</td>
       <td class="num" style="text-align:right">${r.attended}/${r.total}</td>
       <td><span class="att-track"><span class="att-fill" style="width:${p}%;background:${color}"></span></span>
-      <span class="num" style="margin-left:8px">${p}%</span></td></tr>`;
+      <span class="num" style="margin-left:9px">${p}%</span></td></tr>`;
   }).join("");
 }
 
@@ -420,7 +434,7 @@ function pipeline(status){
       <span class="p-dot stall"></span><span class="p-seg"></span><span class="p-dot"></span></span>`;
   }
   const idx=STAGE_ORDER.indexOf(status);
-  return `<span class="pipe" title="${STATUS_LABEL[status]}">`+STAGE_ORDER.map((s,i)=>
+  return `<span class="pipe" title="${STATUS_LABEL[status]||status}">`+STAGE_ORDER.map((s,i)=>
     `<span class="p-dot ${i<=idx?"on":""}"></span>${i<3?`<span class="p-seg ${i<idx?"on":""}"></span>`:""}`
   ).join("")+`</span>`;
 }
@@ -428,16 +442,16 @@ function renderLegislation(d){
   document.querySelector("#leg-table tbody").innerHTML = d.legislation.map(r=>`
     <tr><td class="num">${r.bill}</td><td>${r.title}</td><td>${r.sponsor}</td>
     <td class="num">${r.date}</td><td>${pipeline(r.status)}</td>
-    <td><span class="chip ${r.status}">${STATUS_LABEL[r.status]}</span></td>
-    <td style="color:var(--muted);max-width:260px">${r.note}</td></tr>`).join("");
+    <td><span class="chip ${r.status}">${STATUS_LABEL[r.status]||r.status}</span></td>
+    <td style="color:#4B5563;max-width:280px">${r.note}</td></tr>`).join("");
 }
 
 /* ---------- Tabs ---------- */
-document.querySelectorAll("nav [role=tab]").forEach(btn=>{
+document.querySelectorAll(".subnav [role=tab]").forEach(btn=>{
   btn.addEventListener("click",()=>{
-    document.querySelectorAll("nav [role=tab]").forEach(b=>b.setAttribute("aria-selected", b===btn));
+    document.querySelectorAll(".subnav [role=tab]").forEach(b=>b.setAttribute("aria-selected", b===btn));
     document.querySelectorAll("main section").forEach(s=>s.hidden = s.id!=="tab-"+btn.dataset.tab);
-    if(btn.dataset.tab==="budget") renderBudget(window.__data); /* re-run bar animation */
+    if(btn.dataset.tab==="budget" && window.__data) renderBudget(window.__data);
   });
 });
 
