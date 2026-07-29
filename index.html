@@ -424,7 +424,8 @@ function renderBudget(d){
     cats[r.category].spent+=r.spent;
   });
   const max=Math.max(...Object.values(cats).map(c=>c.allocated));
-  document.getElementById("budget-bars").innerHTML = Object.entries(cats).map(([name,c])=>`
+  const sorted = Object.entries(cats).sort((a,b)=>b[1].allocated-a[1].allocated); // largest allocation first
+  document.getElementById("budget-bars").innerHTML = sorted.map(([name,c])=>`
     <div class="bar-item">
       <div class="bar-head"><span>${name}</span><span class="amt">${fmt$(c.spent)} of ${fmt$(c.allocated)}</span></div>
       <div class="track">
