@@ -298,7 +298,7 @@
     </div>
   <!-- ============ TIER II FUNDING ============ -->
   <section id="tab-tier2" role="tabpanel" hidden>
-    <div id="t2-setup" class="block" style="display:none">
+    <div id="t2-setup" class="block">
       <h2>Tier II Funding</h2>
       <p class="desc">This section isn't connected yet. Create a tab in the spreadsheet named <strong>Tier2</strong> with the column headers <strong>Category, Amount, Notes</strong> in row 1 — one row per funding category, with the running total spent in Amount. Publish that tab as CSV and paste its URL into <code>DATA_SOURCES.tier2</code> in this file.</p>
     </div>
@@ -338,7 +338,7 @@
         </div>
       </div>
     </div>
-    <div id="t2-diag" class="t2-diag"></div>
+    <div id="t2-diag" class="t2-diag">Waiting for live data… If this message never changes, the page's data load failed before reaching this section — check that the three main spreadsheet URLs are still published.</div>
   </section>
 </main>
 
@@ -346,7 +346,7 @@
   <div class="footer-inner">
     <p><strong>Undergraduate Student Government</strong> · Student Union Room 219, Storrs, CT</p>
     <p style="margin-top:6px">Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
-    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v12 — self-diagnostics</span></p>
+    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v13 — resilient loading</span></p>
   </div>
 </footer>
 
@@ -515,10 +515,20 @@ async function loadData(){
   /* Cache-busting: append a timestamp and disable HTTP caching so the browser
      never serves a stale copy of the published CSVs. */
   const fresh = u => u + (u.includes("?") ? "&" : "?") + "_cb=" + Date.now();
-  const [bRaw,sRaw,lRaw]=await Promise.all(
+  /* Each source loads independently — one failing tab can no longer blank
+     the whole dashboard. Failures render as empty and are reported visibly. */
+  const results = await Promise.allSettled(
     [DATA_SOURCES.budget,DATA_SOURCES.senate,DATA_SOURCES.legislation]
-      .map(u=>fetch(fresh(u), {cache:"no-store"}).then(r=>r.text()).then(parseCSVRows))
+      .map(u=>fetch(fresh(u), {cache:"no-store"}).then(r=>{
+        if(!r.ok) throw new Error("HTTP "+r.status);
+        return r.text();
+      }).then(parseCSVRows))
   );
+  const srcNames = ["Budget","Senate attendance","Legislation"];
+  results.forEach((res,i)=>{
+    if(res.status==="rejected") reportError(srcNames[i]+" data failed to load ("+res.reason.message+") — that section will be empty. Check its published CSV URL.");
+  });
+  const [bRaw,sRaw,lRaw] = results.map(r=>r.status==="fulfilled" ? r.value : []);
   const b = toObjects(bRaw, ["Category","Line item","Allocated","Spent"]);
   const s = toObjects(sRaw, ["Senator","Total meetings","Attended"]);
   const l = toObjects(lRaw, ["Bill #","Title","Status"]);
@@ -826,6 +836,7 @@ loadData().then(d=>{
       catch(e){ reportError(name+" section failed to render: "+e.message); console.error(e); }
     });
 }).catch(err=>{
+  reportError("Data load failed entirely: " + err.message);
   document.getElementById("stat-row").innerHTML =
     `<div class="stat"><div class="label">Data unavailable</div><div class="sub">Could not load the published spreadsheets. Check the CSV URLs in DATA_SOURCES.</div></div>`;
   console.error(err);
