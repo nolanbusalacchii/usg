@@ -6,7 +6,7 @@
 <title>Public Records Dashboard | Undergraduate Student Government | UConn</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
+<style>https://docs.google.com/spreadsheets/d/e/2PACX-1vSepixLv6k3qA3bUsGHj77LBrLztoUxvTpFS0uQhBOEbEFYkcnSDp3ParYPYQyuW0XnDNYiuUX_hmzc/pub?output=csv
   /* ============ UConn brand tokens (brand.uconn.edu) ============ */
   :root{
     --uconn-navy:#000E2F;   /* UConn blue */
@@ -298,6 +298,41 @@
   .ov-win .wn{font-size:13.5px;color:var(--uconn-grey);margin-top:2px}
   .ov-empty{color:var(--uconn-grey);font-size:15px}
 
+  .type-badge{
+    display:inline-block;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;
+    letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;white-space:nowrap;
+  }
+  .type-badge.exo{background:var(--blue-t);color:var(--link)}
+
+  /* ============ Representation / coverage map ============ */
+  .cov-group{margin-bottom:26px}
+  .cov-group.exo h3{color:var(--link)}
+  .cov-group h3{
+    font-family:'Montserrat',sans-serif;font-size:12.5px;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--uconn-grey);
+    margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--line);
+  }
+  .cov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:12px}
+  .cov-cell{border:1px solid var(--line);padding:12px 14px;border-left:3px solid var(--green)}
+  .cov-cell.partial{border-left-color:var(--amber)}
+  .cov-cell.empty{border-left-color:var(--red);background:#FDF7F6}
+  .cov-cell .cname{font-weight:600;font-size:14.5px;line-height:1.25}
+  .cov-cell .cstat{font-size:12.5px;color:var(--uconn-grey);margin-top:3px;font-weight:600}
+  .pips{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+  .pip{width:13px;height:13px;border:1.5px solid var(--uconn-navy);flex:none}
+  .pip.on{background:var(--uconn-navy)}
+  .pip.off{background:transparent;border-color:#B9C1CE}
+  .vac-chip{
+    display:inline-flex;align-items:baseline;gap:7px;border:1px solid var(--line);
+    border-left:3px solid var(--red);padding:9px 13px;font-size:14px;
+  }
+  .vac-chip .n{font-family:'Montserrat',sans-serif;font-weight:800;color:var(--red);font-size:16px}
+  .vac-list{display:flex;flex-wrap:wrap;gap:10px;max-width:960px}
+  .seats-warn{
+    background:var(--amber-t);border:1px solid var(--amber);color:#6B4A00;
+    padding:12px 16px;font-size:13.5px;max-width:860px;margin-top:8px;
+  }
+
   /* ============ Footer (UConn navy) ============ */
   footer{background:var(--uconn-navy);color:#B9C1CE;margin-top:20px}
   .footer-inner{max-width:1100px;margin:0 auto;padding:30px 24px 40px;font-size:14px}
@@ -315,7 +350,7 @@
 <div class="page-head">
   <div class="page-head-inner">
     <h1>Public Records Dashboard</h1>
-    <p class="meta"><strong id="asof-text">Data as of —</strong> &nbsp;·&nbsp; Budget, Senate attendance, and legislation records of the Undergraduate Student Government</p>
+    <p class="meta"><strong id="asof-text">Data as of —</strong> &nbsp;·&nbsp; <span id="lbl-subtitle">Budget, Senate attendance, and legislation records of the Undergraduate Student Government</span></p>
   </div>
 </div>
 
@@ -324,6 +359,7 @@
     <button role="tab" aria-selected="true"  data-tab="overview">Overview</button>
     <button role="tab" aria-selected="false" data-tab="budget">Budget</button>
     <button role="tab" aria-selected="false" data-tab="senate">Senate Attendance</button>
+    <button role="tab" aria-selected="false" data-tab="seats">Representation</button>
     <button role="tab" aria-selected="false" data-tab="legislation">Legislation</button>
     <button role="tab" aria-selected="false" data-tab="tier2">Tier II Funding</button>
     <button role="tab" aria-selected="false" data-tab="events">Events</button>
@@ -354,7 +390,7 @@
   <!-- ============ BUDGET ============ -->
   <section id="tab-budget" role="tabpanel" hidden>
     <div class="block">
-      <h2>FY26 Allocations by Category</h2>
+      <h2 id="lbl-budget">Allocations by Category</h2>
       <p class="desc">Student activity fee funding allocated by USG and spending to date, drawn from the Funding Board ledger.</p>
       <div class="bchart" id="budget-bars"></div>
       <div class="legend">
@@ -378,22 +414,51 @@
   <!-- ============ SENATE ============ -->
   <section id="tab-senate" role="tabpanel" hidden>
     <div class="block">
-      <h2>Senator Attendance — Spring 2026</h2>
+      <h2 id="lbl-senate">Senator Attendance</h2>
       <p class="desc">Attendance at regular Senate meetings. Senators below 60% are flagged under the USG bylaws attendance policy.</p>
-      <div class="tbl-search"><input type="search" id="search-senate" data-table="senate-table" placeholder="Search by senator, constituency, or committee…" aria-label="Search senators"><span class="tbl-count" id="count-senate-table"></span></div>
+      <div class="tbl-search"><input type="search" id="search-senate" data-table="senate-table" placeholder="Search by senator, constituency, type, or committee…" aria-label="Search senators"><span class="tbl-count" id="count-senate-table"></span></div>
       <div class="table-wrap">
         <table id="senate-table">
-          <thead><tr><th>Senator</th><th>Constituency</th><th>Committee</th><th style="text-align:right">Meetings</th><th>Attendance</th></tr></thead>
+          <thead><tr><th>Senator</th><th>Constituency</th><th>Type</th><th>Committee</th><th style="text-align:right">Meetings</th><th>Attendance</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </div>
   </section>
 
+  <!-- ============ REPRESENTATION / VACANCY BOARD ============ -->
+  <section id="tab-seats" role="tabpanel" hidden>
+    <div id="seats-setup" class="block">
+      <h2>Representation</h2>
+      <p class="desc">This section isn't connected yet. Import the <strong>Seats</strong> tab into the spreadsheet (columns <strong>Constituency, Type, Seats</strong>), publish it as CSV, and paste its URL into <code>DATA_SOURCES.seats</code> in this file.</p>
+    </div>
+    <div id="seats-content" style="display:none">
+      <div class="block">
+        <h2>Senate Vacancies</h2>
+        <p class="desc">Seats are compared live against the senators listed on the Attendance tab — when someone is added there, the vacancy closes here automatically.</p>
+        <div id="seats-summary" class="ov-grid"></div>
+        <div id="seats-open" style="margin-top:24px"></div>
+      </div>
+      <div class="block">
+        <h2>Constituency Coverage</h2>
+        <p class="desc">Every constituency and how many of its seats are filled. Each square is one seat: navy is filled, hollow is vacant.</p>
+        <div class="tbl-search"><input type="search" id="search-seats" data-table="seats-table" placeholder="Search constituencies…" aria-label="Search constituencies"><span class="tbl-count" id="count-seats-table"></span></div>
+        <div id="seats-map"></div>
+        <div class="table-wrap" style="margin-top:24px">
+          <table id="seats-table">
+            <thead><tr><th>Constituency</th><th>Type</th><th style="text-align:right">Filled</th><th style="text-align:right">Seats</th><th>Coverage</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="seats-warn"></div>
+    </div>
+  </section>
+
   <!-- ============ LEGISLATION ============ -->
   <section id="tab-legislation" role="tabpanel" hidden>
     <div class="block">
-      <h2>Legislation Tracker — 2025–26 Session</h2>
+      <h2 id="lbl-leg">Legislation Tracker</h2>
       <p class="desc">Every resolution and bill, tracked past the vote: Drafted → Passed → Administration responded → Implemented.</p>
       <div class="tbl-search"><input type="search" id="search-leg" data-table="leg-table" placeholder="Search by bill number, title, sponsor, or status…" aria-label="Search legislation"><span class="tbl-count" id="count-leg-table"></span></div>
       <div class="table-wrap">
@@ -413,7 +478,7 @@
     </div>
     <div id="t2-content" style="display:none">
       <div class="block">
-        <h2>Tier II Funding — Spent to Date</h2>
+        <h2 id="lbl-t2">Tier II Funding — Spent to Date</h2>
         <p class="desc">Total Tier II student organization funding disbursed this fiscal year, out of the $900,000 allocation. Summed live from the category totals in the spreadsheet.</p>
         <div class="t2-hero">
           <div class="t2-big">
@@ -476,7 +541,7 @@
   <div class="footer-inner">
     <p><strong>Undergraduate Student Government</strong> · Student Union Room 219, Storrs, CT</p>
     <p style="margin-top:6px">Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
-    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v16 — overview, search, deep links</span></p>
+    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v18 — ex officio senators</span></p>
   </div>
 </footer>
 
@@ -491,13 +556,25 @@
 
 const USE_LIVE_DATA = true;
 
+/* =====================================================================
+   LABELS — edit these once a year. Nothing else in this file contains
+   a year or term name. Change them here and every heading updates.
+   ===================================================================== */
+const LABELS = {
+  fiscalYear:   "FY27",           // budget headings
+  senateTerm:   "2026–27",        // attendance headings
+  session:      "2026–27",        // legislation headings
+  tier2Year:    "2026–27",        // Tier II headings
+  subtitle:     "Budget, Tier II funding, Senate attendance, legislation, and events of the Undergraduate Student Government"
+};
+
 /* Tier II allocation for the year. Change this one number if the
    allocation changes. */
 const TIER2_BUDGET = 900000;
 
 const DATA_SOURCES = {
   budget:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=1576033671&single=true&output=csv",
-  senate:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=1445517678&single=true&output=csv",
+  senate:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vSepixLv6k3qA3bUsGHj77LBrLztoUxvTpFS0uQhBOEbEFYkcnSDp3ParYPYQyuW0XnDNYiuUX_hmzc/pub?gid=1827431951&single=true&output=csv",
   legislation: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=173801048&single=true&output=csv",
   /* Tier II tab: create a sheet tab named "Tier2" with headers
      Date, Category, Amount, Notes in row 1, publish it as CSV,
@@ -506,7 +583,10 @@ const DATA_SOURCES = {
   /* Events tab: import the pre-built Events tab (or create one with headers
      Date, Event, Time, Location, Description), publish it as CSV, and paste
      its URL here. */
-  events:      "PASTE_EVENTS_CSV_URL_HERE",
+  events:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=1814470009&single=true&output=csv",
+  /* Seats tab: import the pre-built Seats tab (Constituency, Type, Seats),
+     publish it as CSV, and paste its URL here. Powers the vacancy board. */
+  seats:       "https://docs.google.com/spreadsheets/d/e/2PACX-1vSepixLv6k3qA3bUsGHj77LBrLztoUxvTpFS0uQhBOEbEFYkcnSDp3ParYPYQyuW0XnDNYiuUX_hmzc/pub?gid=746687762&single=true&output=csv",
   asOf:        "July 28, 2026"
 };
 
@@ -722,6 +802,23 @@ async function loadData(){
       })).filter(r=>r.event && r.date);
     }catch(e){ reportError("Events data failed to load ("+e.message+") — check the published Events CSV URL."); ev = null; }
   }
+  /* Seats: powers the vacancy board / coverage map. */
+  let seats = null;
+  if(DATA_SOURCES.seats && !DATA_SOURCES.seats.startsWith("PASTE")){
+    try{
+      const raw = await fetch(fresh(DATA_SOURCES.seats), {cache:"no-store"}).then(r=>{
+        if(!r.ok) throw new Error("HTTP "+r.status);
+        return r.text();
+      }).then(parseCSVRows);
+      seats = toObjects(raw, ["Constituency","Seats"]).map(r=>({
+        constituency:(r["Constituency"]||"").trim(),
+        type:(r["Type"]||"").trim(),
+        seats:num(r["Seats"]),
+      })).filter(r=>r.constituency && r.seats>0
+                 && !/^total/i.test(r.constituency));   /* skip the sheet's TOTAL SEATS row */
+    }catch(e){ reportError("Seats data failed to load ("+e.message+") — check the published Seats CSV URL."); seats = null; }
+  }
+
   return {
     asOf: DATA_SOURCES.asOf,
     budget: b.map(mapBudgetRow).filter(r=>{
@@ -733,7 +830,8 @@ async function loadData(){
     senate: s.map(mapSenateRow).filter(r=>r.name),
     legislation: l.map(mapLegislationRow).filter(r=>r.bill),
     tier2: t2,
-    events: ev
+    events: ev,
+    seats: seats
   };
 }
 
@@ -751,7 +849,7 @@ function renderStats(d){
   const passed = d.legislation.filter(r=>r.status!=="drafted").length;
   const impl   = d.legislation.filter(r=>r.status==="implemented").length;
   document.getElementById("stat-row").innerHTML = `
-    <div class="stat"><div class="label">FY26 Allocated</div><div class="value">${fmt$(alloc)}</div><div class="sub">${pct(spent,alloc)}% spent to date</div></div>
+    <div class="stat"><div class="label">Allocated</div><div class="value">${fmt$(alloc)}</div><div class="sub">${pct(spent,alloc)}% spent to date</div></div>
     <div class="stat"><div class="label">Avg. Senate Attendance</div><div class="value">${att}%</div><div class="sub">${d.senate.length} senators · Spring 2026</div></div>
     <div class="stat"><div class="label">Bills Passed</div><div class="value">${passed}</div><div class="sub">2025–26 session</div></div>
     <div class="stat"><div class="label">Implemented</div><div class="value">${impl}</div><div class="sub">${pct(impl,passed)}% of passed bills</div></div>`;
@@ -812,17 +910,28 @@ function renderBudget(d){
 
 /* ---------- Render: senate ---------- */
 function renderSenate(d){
+  /* Look up each senator's type (Academic / Residential / Ex-Officio) from
+     the Seats tab, tolerating case, spacing, and hyphen differences. */
+  const norm = s => String(s||"").trim().toLowerCase().replace(/[\s\-_]+/g," ");
+  const typeOf = {};
+  (d.seats||[]).forEach(s=>{ typeOf[norm(s.constituency)] = s.type || ""; });
+  const typeCell = c => {
+    const t = typeOf[norm(c)] || "";
+    if(!t) return "";
+    return t==="Ex-Officio" ? `<span class="type-badge exo">Ex Officio</span>` : t;
+  };
+
   const rows=[...d.senate].sort((a,b)=>
     pct(b.attended,b.total)-pct(a.attended,a.total) || a.name.localeCompare(b.name));
   document.querySelector("#senate-table tbody").innerHTML = rows.map(r=>{
     if(!r.total){  /* no meetings recorded yet — show neutral dash, not a red 0% */
-      return `<tr><td>${r.name}</td><td>${r.constituency}</td><td>${r.committee||""}</td>
+      return `<tr><td>${r.name}</td><td>${r.constituency}</td><td>${typeCell(r.constituency)}</td><td>${r.committee||""}</td>
         <td class="num" style="text-align:right">—</td>
         <td style="color:var(--uconn-grey);font-size:13px">No meetings recorded yet</td></tr>`;
     }
     const p=pct(r.attended,r.total);
     const color = p>=80 ? "var(--green)" : p>=60 ? "var(--amber)" : "var(--red)";
-    return `<tr><td>${r.name}</td><td>${r.constituency}</td><td>${r.committee||""}</td>
+    return `<tr><td>${r.name}</td><td>${r.constituency}</td><td>${typeCell(r.constituency)}</td><td>${r.committee||""}</td>
       <td class="num" style="text-align:right">${r.attended}/${r.total}</td>
       <td><span class="att-track"><span class="att-fill" style="width:${p}%;background:${color}"></span></span>
       <span class="num" style="margin-left:9px">${p}%</span></td></tr>`;
@@ -1013,7 +1122,7 @@ function renderOverview(d){
   const t2spent = d.tier2 ? (d.tier2.cats||[]).reduce((s,r)=>s+r.amount,0) : null;
 
   const cards = [
-    {k:"Budget Allocated", v:fmt$(alloc), s:`${pct(spent,alloc)}% spent to date`},
+    {k:LABELS.fiscalYear+" Budget Allocated", v:fmt$(alloc), s:`${pct(spent,alloc)}% spent to date`},
     {k:"Senators Seated", v:String(senators), s: att!==null ? `${att}% average attendance` : "Attendance logging begins with the first meeting"},
     {k:"Bills Tracked", v:String(bills), s:`${impl} fully implemented`},
   ];
@@ -1088,6 +1197,77 @@ function reapplySearches(){
   document.querySelectorAll(".tbl-search input").forEach(i=>{ if(i.__apply && i.value) i.__apply(); });
 }
 
+/* ---------- Render: representation / vacancy board ---------- */
+function renderSeats(d){
+  const setup=document.getElementById("seats-setup");
+  const content=document.getElementById("seats-content");
+  if(!setup||!content) return;
+  if(!d.seats){ setup.style.display="block"; content.style.display="none"; return; }
+  setup.style.display="none"; content.style.display="block";
+
+  /* Count seated senators per constituency (case/spacing tolerant) */
+  const norm = s => String(s||"").trim().toLowerCase().replace(/[\s\-_]+/g," ");
+  const filledBy = {};
+  d.senate.forEach(s=>{ const k=norm(s.constituency); if(k) filledBy[k]=(filledBy[k]||0)+1; });
+
+  const rows = d.seats.map(s=>{
+    const filled = Math.min(s.seats, filledBy[norm(s.constituency)]||0);
+    return {...s, filled, vacant:Math.max(0,s.seats-filled)};
+  }).sort((a,b)=> b.vacant-a.vacant || a.constituency.localeCompare(b.constituency));
+
+  const totalSeats=rows.reduce((x,r)=>x+r.seats,0);
+  const totalFilled=rows.reduce((x,r)=>x+r.filled,0);
+  const totalVacant=totalSeats-totalFilled;
+  const fullyEmpty=rows.filter(r=>r.filled===0).length;
+
+  document.getElementById("seats-summary").innerHTML = `
+    <div class="ov-card"><div class="k">Seats Filled</div><div class="v">${totalFilled} / ${totalSeats}</div><div class="s">${pct(totalFilled,totalSeats)}% of the Senate seated</div></div>
+    <div class="ov-card"><div class="k">Open Seats</div><div class="v">${totalVacant}</div><div class="s">across ${rows.filter(r=>r.vacant>0).length} constituencies</div></div>
+    <div class="ov-card"><div class="k">Unrepresented</div><div class="v">${fullyEmpty}</div><div class="s">constituencies with no senator at all</div></div>`;
+
+  /* Open seats board */
+  const open = rows.filter(r=>r.vacant>0);
+  document.getElementById("seats-open").innerHTML = open.length
+    ? `<div class="vac-list">` + open.map(r=>
+        `<span class="vac-chip"><span class="n">${r.vacant}</span><span>${r.constituency}${r.filled===0?" — no representation":""}</span></span>`).join("") + `</div>`
+    : `<p class="ov-empty">Every Senate seat is currently filled.</p>`;
+
+  /* Coverage map, grouped by type */
+  const ORDER={"Academic":0,"Residential":1,"Ex-Officio":2};
+  const types=[...new Set(rows.map(r=>r.type||"Other"))]
+    .sort((a,b)=>(ORDER[a]??9)-(ORDER[b]??9) || a.localeCompare(b));
+  document.getElementById("seats-map").innerHTML = types.map(t=>{
+    const group=rows.filter(r=>(r.type||"Other")===t).sort((a,b)=>a.constituency.localeCompare(b.constituency));
+    return `<div class="cov-group${t==="Ex-Officio"?" exo":""}"><h3>${t==="Ex-Officio"?"Ex Officio — Cultural Centers & Affiliated Organizations":t}</h3><div class="cov-grid">` + group.map(r=>{
+      const cls = r.filled===0 ? "empty" : r.filled<r.seats ? "partial" : "";
+      const pips = Array.from({length:r.seats},(_,i)=>
+        `<span class="pip ${i<r.filled?"on":"off"}"></span>`).join("");
+      return `<div class="cov-cell ${cls}">
+        <div class="cname">${r.constituency}</div>
+        <div class="cstat">${r.filled} of ${r.seats} filled${r.vacant?` · ${r.vacant} open`:""}</div>
+        <div class="pips">${pips}</div></div>`;
+    }).join("") + `</div></div>`;
+  }).join("");
+
+  /* Table */
+  document.querySelector("#seats-table tbody").innerHTML = rows.map(r=>{
+    const p=pct(r.filled,r.seats);
+    const color = p===100 ? "var(--green)" : p>0 ? "var(--amber)" : "var(--red)";
+    return `<tr><td>${r.constituency}</td><td>${r.type||""}</td>
+      <td class="num" style="text-align:right">${r.filled}</td>
+      <td class="num" style="text-align:right">${r.seats}</td>
+      <td><span class="att-track"><span class="att-fill" style="width:${p}%;background:${color}"></span></span>
+      <span class="num" style="margin-left:9px">${p}%</span></td></tr>`;
+  }).join("");
+
+  /* Warn about senators whose constituency doesn't match any seat row */
+  const known=new Set(d.seats.map(s=>norm(s.constituency)));
+  const orphans=[...new Set(d.senate.map(s=>s.constituency).filter(c=>c && !known.has(norm(c))))];
+  document.getElementById("seats-warn").innerHTML = orphans.length
+    ? `<div class="seats-warn"><strong>Heads up:</strong> ${orphans.length} constituency name${orphans.length>1?"s":""} on the Attendance tab ${orphans.length>1?"do":"does"} not match any row on the Seats tab, so ${orphans.length>1?"those senators are":"that senator is"} not counted as filling a seat: ${orphans.map(o=>`“${o}”`).join(", ")}. Fix the spelling in either tab so they match.</div>`
+    : "";
+}
+
 /* ---------- Render: legislation ---------- */
 function pipeline(status){
   if(status==="stalled"){
@@ -1110,7 +1290,7 @@ function renderLegislation(d){
 }
 
 /* ---------- Tabs + deep links ---------- */
-const VALID_TABS = ["overview","budget","senate","legislation","tier2","events"];
+const VALID_TABS = ["overview","budget","senate","seats","legislation","tier2","events"];
 
 function showTab(name, updateHash){
   if(!VALID_TABS.includes(name)) name = "overview";
@@ -1135,6 +1315,17 @@ document.querySelectorAll(".subnav [role=tab]").forEach(btn=>{
 /* Back/forward buttons and pasted #links */
 window.addEventListener("hashchange", ()=>showTab(location.hash.slice(1), false));
 
+/* ---------- Apply LABELS to headings (single source of truth) ---------- */
+function applyLabels(){
+  const set=(id,txt)=>{ const e=document.getElementById(id); if(e) e.textContent=txt; };
+  set("lbl-subtitle", LABELS.subtitle);
+  set("lbl-budget", LABELS.fiscalYear+" Allocations by Category");
+  set("lbl-senate", "Senator Attendance — "+LABELS.senateTerm);
+  set("lbl-leg", "Legislation Tracker — "+LABELS.session+" Session");
+  set("lbl-t2", "Tier II Funding — Spent to Date ("+LABELS.tier2Year+")");
+  document.querySelectorAll("[data-label-fy]").forEach(e=>e.textContent=LABELS.fiscalYear);
+}
+
 /* ---------- Visible error reporting (no console needed) ---------- */
 function reportError(msg){
   const b = document.createElement("div");
@@ -1148,11 +1339,12 @@ window.addEventListener("error", e=>reportError("Script error: " + e.message));
 loadData().then(d=>{
   window.__data=d;
   document.getElementById("asof-text").textContent = "Data as of " + d.asOf;
-  [["Overview",renderOverview],["Stats",renderStats],["Budget",renderBudget],["Senate",renderSenate],["Legislation",renderLegislation],["Tier II",renderTier2],["Events",renderEvents]]
+  [["Overview",renderOverview],["Stats",renderStats],["Budget",renderBudget],["Senate",renderSenate],["Representation",renderSeats],["Legislation",renderLegislation],["Tier II",renderTier2],["Events",renderEvents]]
     .forEach(([name,fn])=>{
       try{ fn(d); }
       catch(e){ reportError(name+" section failed to render: "+e.message); console.error(e); }
     });
+  applyLabels();
   wireTableSearch();
   /* Deep link: open the tab named in the URL hash, e.g. /usg/#legislation */
   if(location.hash) showTab(location.hash.slice(1), false);
