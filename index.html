@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Live public records of the UConn Undergraduate Student Government: budget, Tier II funding, Senate attendance, representation, legislation, and events.">
 <title>Public Records Dashboard | Undergraduate Student Government | UConn</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
@@ -598,7 +599,7 @@
   <div class="footer-inner">
     <p><strong>Undergraduate Student Government</strong> · Student Union Room 219, Storrs, CT</p>
     <p style="margin-top:6px">Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
-    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v21 — type badges</span></p>
+    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v22 — parallel loading + hardening</span></p>
   </div>
 </footer>
 
@@ -728,6 +729,7 @@ function parseCSVRows(text){
    This scans the first rows for the line that actually contains the expected
    column names, then builds objects from everything below it. Works whether
    the headers are on line 1 or line 4. */
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function toObjects(rawRows, keyHeaders){
   const norm = s => String(s||"").trim();
   let headerIdx = -1;
@@ -737,9 +739,12 @@ function toObjects(rawRows, keyHeaders){
   }
   if(headerIdx===-1) return [];   // headers not found — treated as empty, error surfaces via zero rows
   const head = rawRows[headerIdx].map(norm);
+  /* Values are HTML-escaped here — the one chokepoint every sheet string
+     passes through — so nothing typed into a spreadsheet cell can inject
+     markup into the page. */
   return rawRows.slice(headerIdx+1)
     .filter(r=>r.length>1)
-    .map(r=>Object.fromEntries(head.map((h,i)=>[h,(r[i]||"").trim()])));
+    .map(r=>Object.fromEntries(head.map((h,i)=>[h, esc((r[i]||"").trim())])));
 }
 
 /* Kept for compatibility: parse assuming headers on line 1 */
@@ -790,46 +795,62 @@ function mapTier2Row(r){
 
 async function loadData(){
   if(!USE_LIVE_DATA) return SAMPLE;
-  /* Cache-busting: append a timestamp and disable HTTP caching so the browser
-     never serves a stale copy of the published CSVs. */
+  /* Cache-busting: timestamp + no-store so no stale CSV is ever served. */
   const fresh = u => u + (u.includes("?") ? "&" : "?") + "_cb=" + Date.now();
-  /* Each source loads independently — one failing tab can no longer blank
-     the whole dashboard. Failures render as empty and are reported visibly. */
-  const results = await Promise.allSettled(
-    [DATA_SOURCES.budget,DATA_SOURCES.senate,DATA_SOURCES.legislation]
-      .map(u=>fetch(fresh(u), {cache:"no-store"}).then(r=>{
-        if(!r.ok) throw new Error("HTTP "+r.status);
-        return r.text();
-      }).then(parseCSVRows))
-  );
-  const srcNames = ["Budget","Senate attendance","Legislation"];
-  results.forEach((res,i)=>{
-    if(res.status==="rejected") reportError(srcNames[i]+" data failed to load ("+res.reason.message+") — that section will be empty. Check its published CSV URL.");
-  });
-  const [bRaw,sRaw,lRaw] = results.map(r=>r.status==="fulfilled" ? r.value : []);
-  const b = toObjects(bRaw, ["Category","Line item","Allocated","Spent"]);
-  const s = toObjects(sRaw, ["Senator","Total meetings","Attended"]);
-  const l = toObjects(lRaw, ["Bill #","Title","Status"]);
+  const fetchCSV = u => fetch(fresh(u), {cache:"no-store"}).then(r=>{
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    return r.text();
+  }).then(parseCSVRows);
 
-  /* Tier II is fetched separately and tolerantly: if the tab isn't set up
-     yet or the fetch fails, tier2 stays null and only that section shows
-     a setup notice — the rest of the dashboard is unaffected. */
+  /* ALL six sources load in parallel — one request wave instead of a chain.
+     Required sources (banner on failure) and optional sources (setup notice
+     when unconfigured) are declared in one registry. */
+  const SOURCES = [
+    {key:"budget",      name:"Budget",            required:true},
+    {key:"senate",      name:"Senate attendance", required:true},
+    {key:"legislation", name:"Legislation",       required:true},
+    {key:"tier2",       name:"Tier II",           required:false},
+    {key:"events",      name:"Events",            required:false},
+    {key:"seats",       name:"Seats",             required:false},
+  ];
+  const configured = s => DATA_SOURCES[s.key] && !DATA_SOURCES[s.key].startsWith("PASTE");
+  const settled = await Promise.allSettled(SOURCES.map(s =>
+    configured(s) ? fetchCSV(DATA_SOURCES[s.key]) : Promise.reject(new Error("__unconfigured__"))
+  ));
+  const raw = {};
+  SOURCES.forEach((s,i)=>{
+    const res = settled[i];
+    if(res.status==="fulfilled"){ raw[s.key]=res.value; return; }
+    raw[s.key]=null;
+    if(res.reason.message==="__unconfigured__"){
+      if(s.required) reportError(s.name+" data source is not configured in DATA_SOURCES.");
+    } else if(s.required){
+      reportError(s.name+" data failed to load ("+res.reason.message+") — that section will be empty. Check its published CSV URL.");
+    } else if(s.key!=="tier2"){
+      reportError(s.name+" data failed to load ("+res.reason.message+") — check the published "+s.name+" CSV URL.");
+    }
+  });
+
+  /* --- required three --- */
+  const b = toObjects(raw.budget||[], ["Category","Line item","Allocated","Spent"]);
+  const s = toObjects(raw.senate||[], ["Senator","Total meetings","Attended"]);
+  const l = toObjects(raw.legislation||[], ["Bill #","Title","Status"]);
+
+  /* --- Tier II (with diagnostics) --- */
   let t2 = null;
   const diag = {configured:false, url:"", http:"", headerCats:false, headerTl:false, catCount:0, tlCount:0, firstLine:"", hint:""};
-  if(DATA_SOURCES.tier2 && !DATA_SOURCES.tier2.startsWith("PASTE")){
+  if(configured(SOURCES[3])){
     diag.configured = true;
     diag.url = DATA_SOURCES.tier2;
     if(!/gid=/.test(DATA_SOURCES.tier2)) diag.hint = "URL has no gid= — this is the 'Entire Document' link, which exports only the first tab. Republish selecting the Tier2 tab specifically.";
-    try{
-      const resp = await fetch(fresh(DATA_SOURCES.tier2), {cache:"no-store"});
-      diag.http = resp.status + (resp.ok ? " OK" : " ERROR");
-      const raw = await resp.text().then(parseCSVRows);
-      diag.firstLine = (raw[0]||[]).join(", ").slice(0,120);
-      const catsObjs = toObjects(raw, ["Category","Amount"]);
-      const tlObjs = toObjects(raw, ["Date","Remaining"]);
-      diag.headerCats = catsObjs.length>0 || raw.some(r=>r.map(c=>String(c).trim()).includes("Category") && r.map(c=>String(c).trim()).includes("Amount"));
-      diag.headerTl = tlObjs.length>0 || raw.some(r=>r.map(c=>String(c).trim()).includes("Date") && r.map(c=>String(c).trim()).includes("Remaining"));
-      if(!diag.headerCats && raw.some(r=>r.map(c=>String(c).trim()).includes("Allocated")))
+    if(raw.tier2){
+      diag.http = "200 OK";
+      diag.firstLine = (raw.tier2[0]||[]).join(", ").slice(0,120);
+      const catsObjs = toObjects(raw.tier2, ["Category","Amount"]);
+      const tlObjs   = toObjects(raw.tier2, ["Date","Remaining"]);
+      diag.headerCats = catsObjs.length>0 || raw.tier2.some(r=>r.map(c=>String(c).trim()).includes("Category") && r.map(c=>String(c).trim()).includes("Amount"));
+      diag.headerTl   = tlObjs.length>0   || raw.tier2.some(r=>r.map(c=>String(c).trim()).includes("Date") && r.map(c=>String(c).trim()).includes("Remaining"));
+      if(!diag.headerCats && raw.tier2.some(r=>r.map(c=>String(c).trim()).includes("Allocated")))
         diag.hint = "This URL is serving the Budget tab, not Tier2 — republish and select the Tier2 tab in the first dropdown.";
       const cats = catsObjs.map(mapTier2Row).filter(r=>r.category && r.amount>0);
       const timeline = tlObjs
@@ -838,42 +859,34 @@ async function loadData(){
         .sort((a,b)=>a.t-b.t);
       diag.catCount = cats.length; diag.tlCount = timeline.length;
       t2 = {cats, timeline};
-    }catch(e){ console.error("Tier2 load failed:", e); diag.http = diag.http || ("fetch failed: "+e.message); t2 = null; }
+    } else {
+      const res = settled[3];
+      diag.http = "fetch failed: " + (res.reason ? res.reason.message : "unknown");
+    }
   }
   window.__t2diag = diag;
 
-  /* Events: same independent, tolerant pattern as Tier II. */
+  /* --- events --- */
   let ev = null;
-  if(DATA_SOURCES.events && !DATA_SOURCES.events.startsWith("PASTE")){
-    try{
-      const raw = await fetch(fresh(DATA_SOURCES.events), {cache:"no-store"}).then(r=>{
-        if(!r.ok) throw new Error("HTTP "+r.status);
-        return r.text();
-      }).then(parseCSVRows);
-      ev = toObjects(raw, ["Date","Event"]).map(r=>({
-        date:(r["Date"]||"").trim(),
-        event:(r["Event"]||"").trim(),
-        time:(r["Time"]||"").trim(),
-        location:(r["Location"]||"").trim(),
-        desc:(r["Description"]||"").trim(),
-      })).filter(r=>r.event && r.date);
-    }catch(e){ reportError("Events data failed to load ("+e.message+") — check the published Events CSV URL."); ev = null; }
+  if(raw.events){
+    ev = toObjects(raw.events, ["Date","Event"]).map(r=>({
+      date:(r["Date"]||"").trim(),
+      event:(r["Event"]||"").trim(),
+      time:(r["Time"]||"").trim(),
+      location:(r["Location"]||"").trim(),
+      desc:(r["Description"]||"").trim(),
+    })).filter(r=>r.event && r.date);
   }
-  /* Seats: powers the vacancy board / coverage map. */
+
+  /* --- seats --- */
   let seats = null;
-  if(DATA_SOURCES.seats && !DATA_SOURCES.seats.startsWith("PASTE")){
-    try{
-      const raw = await fetch(fresh(DATA_SOURCES.seats), {cache:"no-store"}).then(r=>{
-        if(!r.ok) throw new Error("HTTP "+r.status);
-        return r.text();
-      }).then(parseCSVRows);
-      seats = toObjects(raw, ["Constituency","Seats"]).map(r=>({
-        constituency:(r["Constituency"]||"").trim(),
-        type:(r["Type"]||"").trim(),
-        seats:num(r["Seats"]),
-      })).filter(r=>r.constituency && r.seats>0
-                 && !/^total/i.test(r.constituency));   /* skip the sheet's TOTAL SEATS row */
-    }catch(e){ reportError("Seats data failed to load ("+e.message+") — check the published Seats CSV URL."); seats = null; }
+  if(raw.seats){
+    seats = toObjects(raw.seats, ["Constituency","Seats"]).map(r=>({
+      constituency:(r["Constituency"]||"").trim(),
+      type:(r["Type"]||"").trim(),
+      seats:num(r["Seats"]),
+    })).filter(r=>r.constituency && r.seats>0
+               && !/^total/i.test(r.constituency));   /* skip the sheet's TOTAL SEATS row */
   }
 
   return {
@@ -893,6 +906,14 @@ async function loadData(){
 }
 
 /* ---------- Helpers ---------- */
+/* Shared constituency-name normalizer (case / spacing / hyphen tolerant) */
+const normKey = s => String(s||"").trim().toLowerCase().replace(/[\s\-_]+/g," ");
+/* Shared event prep: attach timestamps, drop invalid dates, sort ascending */
+function prepEvents(events){
+  return (events||[]).map(e=>({...e, t: e.t ?? new Date(e.date).getTime()}))
+    .filter(e=>!isNaN(e.t)).sort((a,b)=>a.t-b.t);
+}
+const todayT = ()=>{ const t=new Date(); t.setHours(0,0,0,0); return t.getTime(); };
 const fmt$ = n => "$" + n.toLocaleString("en-US");
 const pct  = (a,b) => b ? Math.round(100*a/b) : 0;
 const STATUS_LABEL = {drafted:"Drafted", passed:"Passed", responded:"Admin responded", implemented:"Implemented", stalled:"Stalled"};
@@ -972,11 +993,10 @@ function renderBudget(d){
 function renderSenate(d){
   /* Look up each senator's type (Academic / Residential / Ex-Officio) from
      the Seats tab, tolerating case, spacing, and hyphen differences. */
-  const norm = s => String(s||"").trim().toLowerCase().replace(/[\s\-_]+/g," ");
   const typeOf = {};
-  (d.seats||[]).forEach(s=>{ typeOf[norm(s.constituency)] = s.type || ""; });
+  (d.seats||[]).forEach(s=>{ typeOf[normKey(s.constituency)] = s.type || ""; });
   const typeCell = c => {
-    const t = typeOf[norm(c)] || "";
+    const t = typeOf[normKey(c)] || "";
     if(!t) return "";
     const cls = t==="Ex-Officio" ? "exo" : t==="Academic" ? "acad" : t==="Residential" ? "res" : "";
     const label = t==="Ex-Officio" ? "Ex Officio" : t;
@@ -1073,7 +1093,8 @@ function renderTier2(d){
         ${grid}
         <path d="${area}" fill="rgba(0,14,47,0.07)"/>
         <path d="${line}" fill="none" stroke="#000E2F" stroke-width="2.5"/>
-        ${timeline.map(p=>`<circle cx="${x(p).toFixed(1)}" cy="${y(p.remaining).toFixed(1)}" r="3.5" fill="#000E2F"><title>${shortDate(p.t)}: ${fmt$(p.remaining)}</title></circle>`).join("")}
+        ${timeline.map(p=>`<circle cx="${x(p).toFixed(1)}" cy="${y(p.remaining).toFixed(1)}" r="3.5" fill="#000E2F"><meta name="description" content="Live public records of the UConn Undergraduate Student Government: budget, Tier II funding, Senate attendance, representation, legislation, and events.">
+<title>${shortDate(p.t)}: ${fmt$(p.remaining)}</title></circle>`).join("")}
         <text x="${padL}" y="${H-10}" font-size="11" fill="#7C878E" font-family="Montserrat,sans-serif">${shortDate(tMin)}</text>
         <text x="${W-padR}" y="${H-10}" text-anchor="end" font-size="11" fill="#7C878E" font-family="Montserrat,sans-serif">${shortDate(tMax)}</text>
       </svg>`;
@@ -1140,12 +1161,10 @@ function renderEvents(d){
   if(!d.events){ setup.style.display="block"; content.style.display="none"; return; }
   setup.style.display="none"; content.style.display="block";
 
-  const withT = d.events.map(e=>({...e, t: e.t ?? new Date(e.date).getTime()}))
-                        .filter(e=>!isNaN(e.t))
-                        .sort((a,b)=>a.t-b.t);
-  const today = new Date(); today.setHours(0,0,0,0);
-  const upcoming = withT.filter(e=>e.t >= today.getTime());
-  const past = withT.filter(e=>e.t < today.getTime()).reverse(); // most recent first
+  const withT = prepEvents(d.events);
+  const now = todayT();
+  const upcoming = withT.filter(e=>e.t >= now);
+  const past = withT.filter(e=>e.t < now).reverse(); // most recent first
 
   const upEl = document.getElementById("ev-upcoming");
   if(!upcoming.length){
@@ -1193,10 +1212,7 @@ function renderOverview(d){
 
   /* Next event */
   const nextEl = document.getElementById("ov-next");
-  const evs = (d.events||[]).map(e=>({...e,t:e.t ?? new Date(e.date).getTime()}))
-                .filter(e=>!isNaN(e.t)).sort((a,b)=>a.t-b.t);
-  const today = new Date(); today.setHours(0,0,0,0);
-  const next = evs.find(e=>e.t>=today.getTime());
+  const next = prepEvents(d.events).find(e=>e.t>=todayT());
   if(next){
     const when = new Date(next.t).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
     const where = [next.time,next.location].filter(Boolean).join(" · ");
@@ -1267,12 +1283,11 @@ function renderSeats(d){
   setup.style.display="none"; content.style.display="block";
 
   /* Count seated senators per constituency (case/spacing tolerant) */
-  const norm = s => String(s||"").trim().toLowerCase().replace(/[\s\-_]+/g," ");
   const filledBy = {};
-  d.senate.forEach(s=>{ const k=norm(s.constituency); if(k) filledBy[k]=(filledBy[k]||0)+1; });
+  d.senate.forEach(s=>{ const k=normKey(s.constituency); if(k) filledBy[k]=(filledBy[k]||0)+1; });
 
   const rows = d.seats.map(s=>{
-    const filled = Math.min(s.seats, filledBy[norm(s.constituency)]||0);
+    const filled = Math.min(s.seats, filledBy[normKey(s.constituency)]||0);
     return {...s, filled, vacant:Math.max(0,s.seats-filled)};
   }).sort((a,b)=> b.vacant-a.vacant || a.constituency.localeCompare(b.constituency));
 
@@ -1322,8 +1337,8 @@ function renderSeats(d){
   }).join("");
 
   /* Warn about senators whose constituency doesn't match any seat row */
-  const known=new Set(d.seats.map(s=>norm(s.constituency)));
-  const orphans=[...new Set(d.senate.map(s=>s.constituency).filter(c=>c && !known.has(norm(c))))];
+  const known=new Set(d.seats.map(s=>normKey(s.constituency)));
+  const orphans=[...new Set(d.senate.map(s=>s.constituency).filter(c=>c && !known.has(normKey(c))))];
   document.getElementById("seats-warn").innerHTML = orphans.length
     ? `<div class="seats-warn"><strong>Heads up:</strong> ${orphans.length} constituency name${orphans.length>1?"s":""} on the Attendance tab ${orphans.length>1?"do":"does"} not match any row on the Seats tab, so ${orphans.length>1?"those senators are":"that senator is"} not counted as filling a seat: ${orphans.map(o=>`“${o}”`).join(", ")}. Fix the spelling in either tab so they match.</div>`
     : "";
