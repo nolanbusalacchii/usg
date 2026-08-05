@@ -6,17 +6,21 @@
 <title>Public Records Dashboard | Undergraduate Student Government | UConn</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
-<style>https://docs.google.com/spreadsheets/d/e/2PACX-1vSepixLv6k3qA3bUsGHj77LBrLztoUxvTpFS0uQhBOEbEFYkcnSDp3ParYPYQyuW0XnDNYiuUX_hmzc/pub?output=csv
+<style>
   /* ============ UConn brand tokens (brand.uconn.edu) ============ */
   :root{
     --uconn-navy:#000E2F;   /* UConn blue */
+    --navy-700:#0A1E45;     /* hover / secondary navy */
     --uconn-grey:#7C878E;   /* secondary grey */
-    --banner-rule:#3F4760;  /* rule used in the university banner */
-    --ink:#212936;
+    --ink:#1A2233;
+    --ink-soft:#4A5568;
     --page:#FFFFFF;
-    --band:#F5F6F7;
-    --line:#DCDFE3;
+    --band:#F7F8FA;
+    --line:#E3E6EB;
+    --line-soft:#EEF0F3;
     --link:#123A8C;
+    --shadow:0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
+    --shadow-md:0 2px 4px rgba(16,24,40,.04), 0 4px 12px rgba(16,24,40,.07);
     --green:#2E7D46;
     --amber:#996A00;
     --red:#A6382E;
@@ -37,36 +41,48 @@
   a{color:var(--link)}
 
   /* ============ Page head ============ */
-  .page-head{border-bottom:1px solid var(--line)}
-  .page-head-inner{
-    max-width:1100px;margin:0 auto;padding:30px 24px 24px;
+  .page-head{background:var(--page)}
+  .page-head-inner{max-width:1100px;margin:0 auto;padding:34px 24px 26px}
+  .eyebrow{
+    font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--uconn-grey);
+    margin-bottom:10px;
   }
   h1{
-    font-family:'Montserrat',sans-serif;font-weight:700;
-    color:var(--uconn-navy);font-size:clamp(24px,3.4vw,34px);
-    line-height:1.15;
+    font-family:'Montserrat',sans-serif;font-weight:800;
+    color:var(--uconn-navy);font-size:clamp(26px,3.6vw,36px);
+    line-height:1.12;letter-spacing:-.015em;
   }
-  .page-head .meta{
-    margin-top:8px;color:var(--uconn-grey);font-size:14.5px;
+  .page-head .meta{margin-top:10px;color:var(--ink-soft);font-size:15px;max-width:720px}
+  .live-dot{
+    display:inline-flex;align-items:center;gap:7px;margin-top:14px;
+    font-family:'Montserrat',sans-serif;font-size:11.5px;font-weight:700;
+    letter-spacing:.07em;text-transform:uppercase;color:var(--uconn-grey);
   }
-  .page-head .meta strong{color:var(--ink);font-weight:600}
+  .live-dot::before{
+    content:"";width:7px;height:7px;border-radius:50%;background:#2E7D46;flex:none;
+  }
 
   /* ============ Nav (UConn-style navy bar) ============ */
-  .subnav{background:var(--uconn-navy)}
-  .subnav-inner{max-width:1100px;margin:0 auto;display:flex;overflow-x:auto}
+  .subnav{background:var(--uconn-navy);position:sticky;top:0;z-index:20}
+  .subnav-inner{
+    max-width:1100px;margin:0 auto;display:flex;overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .subnav-inner::-webkit-scrollbar{display:none}
   .subnav button{
     appearance:none;border:0;background:transparent;cursor:pointer;
-    font-family:'Montserrat',sans-serif;font-weight:600;font-size:13px;
-    letter-spacing:.09em;text-transform:uppercase;
-    color:#C9CFDA;padding:14px 20px;white-space:nowrap;
-    border-bottom:3px solid transparent;
+    font-family:'Montserrat',sans-serif;font-weight:600;font-size:12.5px;
+    letter-spacing:.08em;text-transform:uppercase;
+    color:#A8B4C8;padding:15px 20px 13px;white-space:nowrap;
+    border-bottom:3px solid transparent;transition:color .15s,background .15s;
   }
-  .subnav button[aria-selected="true"]{color:#FFFFFF;border-bottom-color:#FFFFFF}
-  .subnav button:hover{color:#FFFFFF}
+  .subnav button[aria-selected="true"]{color:#FFFFFF;border-bottom-color:#FFFFFF;font-weight:700}
+  .subnav button:hover{color:#FFFFFF;background:rgba(255,255,255,.06)}
   .subnav button:focus-visible{outline:2px solid #fff;outline-offset:-3px}
 
   /* ============ Stats band ============ */
-  .stats-band{background:var(--band);border-bottom:1px solid var(--line)}
+  .stats-band{background:var(--band);border-bottom:1px solid var(--line);border-top:1px solid var(--line)}
   #stat-row{
     max-width:1100px;margin:0 auto;
     display:grid;grid-template-columns:repeat(4,1fr);
@@ -83,34 +99,35 @@
   }
   .stat .value{
     font-family:'Montserrat',sans-serif;font-weight:800;
-    color:var(--uconn-navy);font-size:30px;line-height:1.15;margin-top:6px;
-    font-variant-numeric:tabular-nums;
+    color:var(--uconn-navy);font-size:29px;line-height:1.15;margin-top:6px;
+    font-variant-numeric:tabular-nums;letter-spacing:-.01em;
   }
   .stat .sub{font-size:13.5px;color:var(--uconn-grey);margin-top:2px}
 
   /* ============ Content ============ */
-  main{max-width:1100px;margin:0 auto;padding:34px 24px 64px}
+  main{max-width:1100px;margin:0 auto;padding:38px 24px 72px}
   section[hidden]{display:none}
-  .block{margin-bottom:40px}
+  .block{margin-bottom:46px}
   h2{
     font-family:'Montserrat',sans-serif;font-weight:700;
-    color:var(--uconn-navy);font-size:21px;
-    padding-bottom:10px;margin-bottom:6px;position:relative;
+    color:var(--uconn-navy);font-size:20px;letter-spacing:-.005em;
+    padding-bottom:11px;margin-bottom:6px;position:relative;
   }
   h2::after{
     content:"";position:absolute;left:0;bottom:0;
-    width:48px;height:3px;background:var(--uconn-navy);
+    width:40px;height:2px;background:var(--uconn-navy);
   }
-  .block > p.desc{color:#4B5563;font-size:15px;max-width:760px;margin:10px 0 20px}
+  .block > p.desc{color:var(--ink-soft);font-size:14.5px;max-width:720px;margin:12px 0 22px;line-height:1.6}
 
   /* ============ Budget bar chart ============ */
   .bchart{display:flex;flex-direction:column;gap:0;max-width:960px;border-top:1px solid var(--line)}
+  .b-row:last-child{border-bottom:0}
   .b-row{
-    display:grid;grid-template-columns:210px 1fr 200px;gap:16px;align-items:center;
-    padding:13px 0;border-bottom:1px solid var(--line);
+    display:grid;grid-template-columns:220px 1fr 205px;gap:20px;align-items:center;
+    padding:15px 0;border-bottom:1px solid var(--line-soft);
   }
   .b-name{font-size:15px;font-weight:600;color:var(--ink);line-height:1.3}
-  .b-track{position:relative;height:24px;background:var(--grey-t)}
+  .b-track{position:relative;height:26px;background:#EDF0F4;border-radius:2px;overflow:hidden}
   .b-alloc,.b-spent{position:absolute;top:0;left:0;height:100%;width:0;transition:width .5s ease-out}
   .b-alloc{background:#C3CCDB}
   .b-spent{background:var(--uconn-navy)}
@@ -132,16 +149,17 @@
   }
 
   /* ============ Tables ============ */
-  .table-wrap{overflow-x:auto;border:1px solid var(--line)}
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:2px;box-shadow:var(--shadow)}
   table{width:100%;border-collapse:collapse;font-size:14.5px}
   thead th{
     background:var(--uconn-navy);color:#FFFFFF;
-    font-family:'Montserrat',sans-serif;font-size:11.5px;font-weight:700;
-    letter-spacing:.07em;text-transform:uppercase;
-    text-align:left;padding:11px 14px;white-space:nowrap;
+    font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;
+    text-align:left;padding:12px 16px;white-space:nowrap;
   }
-  tbody td{padding:11px 14px;border-top:1px solid var(--line);vertical-align:top}
-  tbody tr:nth-child(even){background:#F8F9FA}
+  tbody td{padding:12px 16px;border-top:1px solid var(--line-soft);vertical-align:top;color:var(--ink)}
+  tbody tr:nth-child(even){background:#FAFBFC}
+  tbody tr:hover{background:#F2F5FA}
   td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 
   .att-track{width:120px;height:9px;background:var(--grey-t);display:inline-block;vertical-align:middle}
@@ -150,8 +168,8 @@
   /* ============ Status chips + lifecycle ============ */
   .chip{
     display:inline-block;font-family:'Montserrat',sans-serif;
-    font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
-    padding:4px 10px;white-space:nowrap;
+    font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:4px 10px;white-space:nowrap;border-radius:2px;
   }
   .chip.drafted{background:var(--grey-t);color:#4B5563}
   .chip.passed{background:var(--blue-t);color:var(--link)}
@@ -166,7 +184,11 @@
   .pipe .stall{background:var(--red)}
 
   /* ============ Tier II ============ */
-  .t2-hero{display:flex;align-items:flex-end;gap:44px;flex-wrap:wrap}
+  .t2-hero{
+    display:flex;align-items:flex-end;gap:48px;flex-wrap:wrap;
+    padding:26px 28px;border:1px solid var(--line);background:var(--band);
+    max-width:860px;box-shadow:var(--shadow);
+  }
   .t2-amount{
     font-family:'Montserrat',sans-serif;font-weight:800;color:var(--uconn-navy);
     font-size:clamp(40px,6vw,62px);line-height:1;font-variant-numeric:tabular-nums;
@@ -183,7 +205,8 @@
   .t2-side{display:flex;flex-direction:column;gap:8px;padding-bottom:4px}
   .t2-chart svg{display:block;width:100%;max-width:860px;height:auto}
   .t2-gaugebar{
-    position:relative;height:44px;background:#C3CCDB;max-width:860px;overflow:hidden;
+    position:relative;height:46px;background:#C3CCDB;max-width:860px;overflow:hidden;
+    border-radius:2px;box-shadow:var(--shadow);
   }
   .t2-gauge-spent{position:absolute;top:0;left:0;height:100%;background:var(--uconn-navy);transition:width .6s ease-out}
   .t2-gauge-lbl{
@@ -203,9 +226,16 @@
   .t2-legend .lg-row .swatch{flex:none}
   .t2-legend .lg-row .lg-amt{margin-left:auto;color:var(--uconn-grey);font-size:13px;font-variant-numeric:tabular-nums}
 
+  .diag-wrap{max-width:860px;margin-top:30px;border-top:1px solid var(--line-soft);padding-top:14px}
+  .diag-wrap summary{
+    cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;color:#9AA3B0;list-style-position:inside;
+  }
+  .diag-wrap summary:hover{color:var(--uconn-navy)}
+  .diag-wrap[open] summary{margin-bottom:10px}
   .t2-diag{
-    margin-top:8px;padding:12px 14px;background:#F5F6F7;border:1px solid var(--line);
-    font-size:12.5px;color:#4B5563;line-height:1.7;max-width:860px;
+    padding:12px 14px;background:var(--band);border:1px solid var(--line);
+    font-size:12.5px;color:var(--ink-soft);line-height:1.7;
   }
   .t2-diag .ok{color:var(--green);font-weight:600}
   .t2-diag .bad{color:var(--red);font-weight:600}
@@ -228,7 +258,7 @@
   .ev-row:last-child{border-bottom:0}
   .ev-badge{
     background:var(--uconn-navy);color:#FFFFFF;text-align:center;
-    padding:8px 0 9px;line-height:1.05;
+    padding:9px 0 10px;line-height:1.05;border-radius:2px;box-shadow:var(--shadow);
   }
   .ev-badge .d{font-family:'Montserrat',sans-serif;font-weight:800;font-size:24px;display:block}
   .ev-badge .m{font-family:'Montserrat',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.12em;display:block;margin-top:2px;color:#C9CFDA}
@@ -236,7 +266,11 @@
   .ev-meta{margin-top:3px;font-size:13.5px;color:var(--uconn-grey);font-weight:600}
   .ev-meta .sep{margin:0 7px;opacity:.6}
   .ev-desc{margin-top:5px;font-size:14.5px;color:#4B5563;max-width:640px}
-  .ev-row.next{background:var(--blue-t);margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px;border-bottom:0}
+  .ev-row.next{
+    background:linear-gradient(90deg, var(--blue-t) 0%, rgba(231,236,246,0) 92%);
+    margin-left:-16px;padding-left:16px;border-bottom:1px solid var(--line-soft);
+    border-left:3px solid var(--uconn-navy);
+  }
   .ev-next-chip{
     display:inline-block;margin-left:10px;vertical-align:2px;
     font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;
@@ -261,17 +295,24 @@
   .tbl-search{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
   .tbl-search input{
     font-family:'Source Sans 3',sans-serif;font-size:14.5px;
-    padding:9px 12px;border:1px solid var(--line);background:#fff;color:var(--ink);
-    width:100%;max-width:380px;
+    padding:10px 14px;border:1px solid var(--line);background:#fff;color:var(--ink);
+    width:100%;max-width:400px;border-radius:2px;transition:border-color .15s,box-shadow .15s;
   }
-  .tbl-search input:focus{outline:2px solid var(--uconn-navy);outline-offset:-1px}
+  .tbl-search input::placeholder{color:#9AA3B0}
+  .tbl-search input:focus{
+    outline:none;border-color:var(--uconn-navy);
+    box-shadow:0 0 0 3px rgba(0,14,47,.08);
+  }
   .tbl-count{font-size:13px;color:var(--uconn-grey);font-weight:600}
   tr.filtered-out{display:none}
   .no-results td{padding:16px 14px;color:var(--uconn-grey);font-size:14.5px}
 
   /* ============ Overview ============ */
   .ov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;max-width:960px}
-  .ov-card{border:1px solid var(--line);border-top:3px solid var(--uconn-navy);padding:18px 20px}
+  .ov-card{
+    border:1px solid var(--line);border-top:3px solid var(--uconn-navy);
+    padding:20px 22px;background:#fff;box-shadow:var(--shadow);
+  }
   .ov-card .k{
     font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
     letter-spacing:.09em;text-transform:uppercase;color:var(--uconn-grey);
@@ -300,7 +341,7 @@
 
   .type-badge{
     display:inline-block;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;
-    letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;white-space:nowrap;
+    letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;white-space:nowrap;border-radius:2px;
   }
   .type-badge.exo{background:var(--blue-t);color:var(--link)}
 
@@ -313,7 +354,11 @@
     margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--line);
   }
   .cov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:12px}
-  .cov-cell{border:1px solid var(--line);padding:12px 14px;border-left:3px solid var(--green)}
+  .cov-cell{
+    border:1px solid var(--line);padding:13px 15px;border-left:3px solid var(--green);
+    background:#fff;box-shadow:var(--shadow);transition:box-shadow .15s;
+  }
+  .cov-cell:hover{box-shadow:var(--shadow-md)}
   .cov-cell.partial{border-left-color:var(--amber)}
   .cov-cell.empty{border-left-color:var(--red);background:#FDF7F6}
   .cov-cell .cname{font-weight:600;font-size:14.5px;line-height:1.25}
@@ -323,8 +368,9 @@
   .pip.on{background:var(--uconn-navy)}
   .pip.off{background:transparent;border-color:#B9C1CE}
   .vac-chip{
-    display:inline-flex;align-items:baseline;gap:7px;border:1px solid var(--line);
-    border-left:3px solid var(--red);padding:9px 13px;font-size:14px;
+    display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--line);
+    border-left:3px solid var(--red);padding:10px 15px;font-size:14px;
+    background:#fff;box-shadow:var(--shadow);
   }
   .vac-chip .n{font-family:'Montserrat',sans-serif;font-weight:800;color:var(--red);font-size:16px}
   .vac-list{display:flex;flex-wrap:wrap;gap:10px;max-width:960px}
@@ -334,10 +380,14 @@
   }
 
   /* ============ Footer (UConn navy) ============ */
-  footer{background:var(--uconn-navy);color:#B9C1CE;margin-top:20px}
-  .footer-inner{max-width:1100px;margin:0 auto;padding:30px 24px 40px;font-size:14px}
-  .footer-inner strong{color:#FFFFFF}
-  .footer-inner .fine{margin-top:10px;color:var(--uconn-grey);font-size:12.5px}
+  footer{background:var(--uconn-navy);color:#A8B4C8;margin-top:24px}
+  .footer-inner{max-width:1100px;margin:0 auto;padding:34px 24px 44px;font-size:14px;line-height:1.65}
+  .footer-inner strong{color:#FFFFFF;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.01em}
+  .footer-inner a{color:#C9D4E8}
+  .footer-inner .fine{
+    margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.12);
+    color:#8894AA;font-size:12.5px;
+  }
 
   @media(max-width:640px){
     main{padding:24px 14px 44px}
@@ -349,8 +399,10 @@
 
 <div class="page-head">
   <div class="page-head-inner">
+    <div class="eyebrow">Undergraduate Student Government · University of Connecticut</div>
     <h1>Public Records Dashboard</h1>
-    <p class="meta"><strong id="asof-text">Data as of —</strong> &nbsp;·&nbsp; <span id="lbl-subtitle">Budget, Senate attendance, and legislation records of the Undergraduate Student Government</span></p>
+    <p class="meta" id="lbl-subtitle">Budget, Senate attendance, and legislation records of the Undergraduate Student Government</p>
+    <div class="live-dot" id="asof-text">Live from public records</div>
   </div>
 </div>
 
@@ -512,7 +564,10 @@
         </div>
       </div>
     </div>
-    <div id="t2-diag" class="t2-diag">Waiting for live data… If this message never changes, the page's data load failed before reaching this section — check that the three main spreadsheet URLs are still published.</div>
+    <details id="t2-diag-wrap" class="diag-wrap">
+      <summary>Connection details</summary>
+      <div id="t2-diag" class="t2-diag">Loading…</div>
+    </details>
   </section>
 
   <!-- ============ EVENTS ============ -->
@@ -541,7 +596,7 @@
   <div class="footer-inner">
     <p><strong>Undergraduate Student Government</strong> · Student Union Room 219, Storrs, CT</p>
     <p style="margin-top:6px">Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
-    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v18 — ex officio senators</span></p>
+    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v19 — design refresh</span></p>
   </div>
 </footer>
 
@@ -845,14 +900,17 @@ const STAGE_ORDER  = ["drafted","passed","responded","implemented"];
 function renderStats(d){
   const alloc = d.budget.reduce((s,r)=>s+r.allocated,0);
   const spent = d.budget.reduce((s,r)=>s+r.spent,0);
-  const att   = pct(d.senate.reduce((s,r)=>s+r.attended,0), d.senate.reduce((s,r)=>s+r.total,0));
+  const withMtgs = d.senate.filter(r=>r.total>0);
+  const att = withMtgs.length
+    ? pct(withMtgs.reduce((s,r)=>s+r.attended,0), withMtgs.reduce((s,r)=>s+r.total,0)) : null;
   const passed = d.legislation.filter(r=>r.status!=="drafted").length;
   const impl   = d.legislation.filter(r=>r.status==="implemented").length;
+  const seated = d.seats ? d.seats.reduce((x,r)=>x+r.seats,0) : null;
   document.getElementById("stat-row").innerHTML = `
-    <div class="stat"><div class="label">Allocated</div><div class="value">${fmt$(alloc)}</div><div class="sub">${pct(spent,alloc)}% spent to date</div></div>
-    <div class="stat"><div class="label">Avg. Senate Attendance</div><div class="value">${att}%</div><div class="sub">${d.senate.length} senators · Spring 2026</div></div>
-    <div class="stat"><div class="label">Bills Passed</div><div class="value">${passed}</div><div class="sub">2025–26 session</div></div>
-    <div class="stat"><div class="label">Implemented</div><div class="value">${impl}</div><div class="sub">${pct(impl,passed)}% of passed bills</div></div>`;
+    <div class="stat"><div class="label">${LABELS.fiscalYear} Allocated</div><div class="value">${fmt$(alloc)}</div><div class="sub">${pct(spent,alloc)}% spent to date</div></div>
+    <div class="stat"><div class="label">Senate Seated</div><div class="value">${d.senate.length}${seated?" / "+seated:""}</div><div class="sub">${seated?pct(d.senate.length,seated)+"% of seats filled":"senators"} · ${LABELS.senateTerm}</div></div>
+    <div class="stat"><div class="label">Avg. Attendance</div><div class="value">${att!==null?att+"%":"—"}</div><div class="sub">${att!==null?"across recorded meetings":"begins with the first meeting"}</div></div>
+    <div class="stat"><div class="label">Bills Implemented</div><div class="value">${impl}</div><div class="sub">of ${passed} passed · ${LABELS.session} session</div></div>`;
 }
 
 /* ---------- Render: budget ---------- */
@@ -951,11 +1009,10 @@ function renderTier2(d){
   const dg = window.__t2diag;
   if(diagEl){
     if(!dg){
-      diagEl.innerHTML = `<strong>Status:</strong> showing local sample data (USE_LIVE_DATA is off).`;
+      diagEl.innerHTML = `Showing local sample data (USE_LIVE_DATA is off).`;
     } else {
       const yn = b => b ? `<span class="ok">yes</span>` : `<span class="bad">no</span>`;
-      diagEl.innerHTML = `<strong>Connection status</strong> (for troubleshooting)<br>
-        Tier2 URL configured: ${yn(dg.configured)}${dg.configured ? ` · Fetch: ${dg.http||"—"}` : ""}<br>
+      diagEl.innerHTML = `Tier2 URL configured: ${yn(dg.configured)}${dg.configured ? ` · Fetch: ${dg.http||"—"}` : ""}<br>
         ${dg.configured ? `Found "Category/Amount" headers: ${yn(dg.headerCats)} · rows read: ${dg.catCount}<br>
         Found "Date/Remaining" headers: ${yn(dg.headerTl)} · timeline entries: ${dg.tlCount}<br>` : ""}
         ${dg.hint ? `<span class="bad">→ ${dg.hint}</span><br>` : ""}
@@ -1338,7 +1395,7 @@ window.addEventListener("error", e=>reportError("Script error: " + e.message));
 /* ---------- Init ---------- */
 loadData().then(d=>{
   window.__data=d;
-  document.getElementById("asof-text").textContent = "Data as of " + d.asOf;
+  document.getElementById("asof-text").textContent = "Live from public records · updated " + d.asOf;
   [["Overview",renderOverview],["Stats",renderStats],["Budget",renderBudget],["Senate",renderSenate],["Representation",renderSeats],["Legislation",renderLegislation],["Tier II",renderTier2],["Events",renderEvents]]
     .forEach(([name,fn])=>{
       try{ fn(d); }
