@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Live public records of the UConn Undergraduate Student Government: budget, Tier II funding, Senate attendance, representation, legislation, and events.">
+<!-- Link previews (Slack, iMessage, GroupMe, Discord, etc.) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="USG Public Records Dashboard">
+<meta property="og:description" content="Live budget, Tier II funding, Senate attendance, legislation, and events of UConn's Undergraduate Student Government.">
+<meta property="og:url" content="https://nolanbusalacchii.github.io/usg/">
+<meta property="og:image" content="https://nolanbusalacchii.github.io/usg/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="USG Public Records Dashboard">
+<meta name="twitter:description" content="Live budget, funding, attendance, legislation, and events of UConn's Undergraduate Student Government.">
+<meta name="twitter:image" content="https://nolanbusalacchii.github.io/usg/og-image.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<title>Public Records Dashboard | Undergraduate Student Government | UConn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============ UConn brand tokens (brand.uconn.edu) ============ */
+  :root{
+    --uconn-navy:#000E2F;   /* UConn blue */
+    --navy-700:#0A1E45;     /* hover / secondary navy */
+    --uconn-grey:#7C878E;   /* secondary grey */
+    --ink:#1A2233;
+    --ink-soft:#4A5568;
+    --page:#FFFFFF;
+    --band:#F7F8FA;
+    --line:#E3E6EB;
+    --line-soft:#EEF0F3;
+    --link:#123A8C;
+    --shadow:0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
+    --shadow-md:0 2px 4px rgba(16,24,40,.04), 0 4px 12px rgba(16,24,40,.07);
+    --green:#2E7D46;
+    --amber:#996A00;
+    --red:#A6382E;
+    --green-t:#E7F1EA;
+    --amber-t:#F5EEDB;
+    --red-t:#F6E7E5;
+    --blue-t:#E7ECF6;
+    --grey-t:#EEF0F2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation:none!important;transition:none!important} }
+  body{
+    font-family:'Source Sans 3','Helvetica Neue',Arial,sans-serif;
+    color:var(--ink);
+    background:var(--page);
+    font-size:16px;line-height:1.55;
+  }
+  a{color:var(--link)}
+
+  /* ============ Page head ============ */
+  .page-head{background:var(--page)}
+  .page-head-inner{max-width:1100px;margin:0 auto;padding:34px 24px 26px}
+  .eyebrow{
+    font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--uconn-grey);
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:'Montserrat',sans-serif;font-weight:800;
+    color:var(--uconn-navy);font-size:clamp(26px,3.6vw,36px);
+    line-height:1.12;letter-spacing:-.015em;
+  }
+  .page-head .meta{margin-top:10px;color:var(--ink-soft);font-size:15px;max-width:720px}
+  .live-dot{
+    display:inline-flex;align-items:center;gap:7px;margin-top:14px;
+    font-family:'Montserrat',sans-serif;font-size:11.5px;font-weight:700;
+    letter-spacing:.07em;text-transform:uppercase;color:var(--uconn-grey);
+  }
+  .live-dot::before{
+    content:"";width:7px;height:7px;border-radius:50%;background:#2E7D46;flex:none;
+  }
+
+  /* ============ Nav (UConn-style navy bar) ============ */
+  .subnav{background:var(--uconn-navy);position:sticky;top:0;z-index:20}
+  .subnav-inner{
+    max-width:1100px;margin:0 auto;display:flex;overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .subnav-inner::-webkit-scrollbar{display:none}
+  .subnav button{
+    appearance:none;border:0;background:transparent;cursor:pointer;
+    font-family:'Montserrat',sans-serif;font-weight:600;font-size:12.5px;
+    letter-spacing:.08em;text-transform:uppercase;
+    color:#A8B4C8;padding:15px 20px 13px;white-space:nowrap;
+    border-bottom:3px solid transparent;transition:color .15s,background .15s;
+  }
+  .subnav button[aria-selected="true"]{color:#FFFFFF;border-bottom-color:#FFFFFF;font-weight:700}
+  .subnav button:hover{color:#FFFFFF;background:rgba(255,255,255,.06)}
+  .subnav button:focus-visible{outline:2px solid #fff;outline-offset:-3px}
+
+  /* ============ Stats band ============ */
+  .stats-band{background:var(--band);border-bottom:1px solid var(--line);border-top:1px solid var(--line)}
+  #stat-row{
+    max-width:1100px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(4,1fr);
+    gap:1px;background:var(--line);
+    border-left:1px solid var(--line);border-right:1px solid var(--line);
+  }
+  @media(max-width:920px){ #stat-row{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:440px){ #stat-row{grid-template-columns:1fr} }
+  .stat{padding:22px 24px;background:var(--band);display:flex;flex-direction:column}
+  .stat .label{
+    font-family:'Montserrat',sans-serif;font-size:11.5px;font-weight:700;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--uconn-grey);
+    min-height:34px;display:flex;align-items:flex-end;line-height:1.35;
+  }
+  .stat .value{
+    font-family:'Montserrat',sans-serif;font-weight:800;
+    color:var(--uconn-navy);font-size:29px;line-height:1.15;margin-top:6px;
+    font-variant-numeric:tabular-nums;letter-spacing:-.01em;
+  }
+  .stat .sub{font-size:13.5px;color:var(--uconn-grey);margin-top:2px}
+
+  /* ============ Content ============ */
+  main{max-width:1100px;margin:0 auto;padding:38px 24px 72px}
+  section[hidden]{display:none}
+  .block{margin-bottom:46px}
+  h2{
+    font-family:'Montserrat',sans-serif;font-weight:700;
+    color:var(--uconn-navy);font-size:20px;letter-spacing:-.005em;
+    padding-bottom:11px;margin-bottom:6px;position:relative;
+  }
+  h2::after{
+    content:"";position:absolute;left:0;bottom:0;
+    width:40px;height:2px;background:var(--uconn-navy);
+  }
+  .block > p.desc{color:var(--ink-soft);font-size:14.5px;max-width:720px;margin:12px 0 22px;line-height:1.6}
+
+  /* ============ Budget bar chart ============ */
+  .bchart{display:flex;flex-direction:column;gap:0;max-width:960px;border-top:1px solid var(--line)}
+  .b-row:last-child{border-bottom:0}
+  .b-row{
+    display:grid;grid-template-columns:220px 1fr 205px;gap:20px;align-items:center;
+    padding:15px 0;border-bottom:1px solid var(--line-soft);
+  }
+  .b-name{font-size:15px;font-weight:600;color:var(--ink);line-height:1.3}
+  .b-track{position:relative;height:26px;background:#EDF0F4;border-radius:2px;overflow:hidden}
+  .b-alloc,.b-spent{position:absolute;top:0;left:0;height:100%;width:0;transition:width .5s ease-out}
+  .b-alloc{background:#C3CCDB}
+  .b-spent{background:var(--uconn-navy)}
+  .b-pct{
+    position:absolute;top:0;bottom:0;display:flex;align-items:center;
+    font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
+    padding-left:8px;color:var(--uconn-grey);white-space:nowrap;
+  }
+  .b-pct.on-fill{color:#FFFFFF;padding-left:0}
+  .b-vals{text-align:right;font-variant-numeric:tabular-nums;line-height:1.35}
+  .b-vals .spent-amt{font-family:'Montserrat',sans-serif;font-weight:700;color:var(--uconn-navy);font-size:15px}
+  .b-vals .alloc-amt{font-size:13px;color:var(--uconn-grey)}
+  .legend{display:flex;gap:22px;margin-top:16px;font-size:13.5px;color:#4B5563}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .swatch{width:12px;height:12px;display:inline-block}
+  @media(max-width:720px){
+    .b-row{grid-template-columns:1fr;gap:6px;padding:14px 0}
+    .b-vals{text-align:left}
+  }
+
+  /* ============ Tables ============ */
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:2px;box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  thead th{
+    background:var(--uconn-navy);color:#FFFFFF;
+    font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;
+    text-align:left;padding:12px 16px;white-space:nowrap;
+  }
+  tbody td{padding:12px 16px;border-top:1px solid var(--line-soft);vertical-align:top;color:var(--ink)}
+  tbody tr:nth-child(even){background:#FAFBFC}
+  tbody tr:hover{background:#F2F5FA}
+  td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  .att-track{width:120px;height:9px;background:var(--grey-t);display:inline-block;vertical-align:middle}
+  .att-fill{height:100%;display:block}
+
+  /* ============ Status chips + lifecycle ============ */
+  .chip{
+    display:inline-block;font-family:'Montserrat',sans-serif;
+    font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:4px 10px;white-space:nowrap;border-radius:2px;
+  }
+  .chip.drafted{background:var(--grey-t);color:#4B5563}
+  .chip.passed{background:var(--blue-t);color:var(--link)}
+  .chip.responded{background:var(--amber-t);color:var(--amber)}
+  .chip.implemented{background:var(--green-t);color:var(--green)}
+  .chip.stalled{background:var(--red-t);color:var(--red)}
+
+  .pipe{display:inline-flex;align-items:center;vertical-align:middle}
+  .pipe .p-dot{width:10px;height:10px;border-radius:50%;background:#CBD2DA}
+  .pipe .p-seg{width:16px;height:2px;background:#CBD2DA}
+  .pipe .on{background:var(--uconn-navy)}
+  .pipe .stall{background:var(--red)}
+
+  /* ============ Tier II ============ */
+  .t2-hero{
+    display:flex;align-items:flex-end;gap:48px;flex-wrap:wrap;
+    padding:26px 28px;border:1px solid var(--line);background:var(--band);
+    max-width:860px;box-shadow:var(--shadow);
+  }
+  .t2-amount{
+    font-family:'Montserrat',sans-serif;font-weight:800;color:var(--uconn-navy);
+    font-size:clamp(40px,6vw,62px);line-height:1;font-variant-numeric:tabular-nums;
+  }
+  .t2-mid{
+    font-family:'Montserrat',sans-serif;font-weight:700;color:var(--uconn-navy);
+    font-size:22px;font-variant-numeric:tabular-nums;
+  }
+  .t2-cap{
+    font-family:'Montserrat',sans-serif;font-size:11.5px;font-weight:700;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--uconn-grey);
+  }
+  .t2-big .t2-cap{margin-top:6px}
+  .t2-side{display:flex;flex-direction:column;gap:8px;padding-bottom:4px}
+  .t2-chart svg{display:block;width:100%;max-width:860px;height:auto}
+  .t2-gaugebar{
+    position:relative;height:46px;background:#C3CCDB;max-width:860px;overflow:hidden;
+    border-radius:2px;box-shadow:var(--shadow);
+  }
+  .t2-gauge-spent{position:absolute;top:0;left:0;height:100%;background:var(--uconn-navy);transition:width .6s ease-out}
+  .t2-gauge-lbl{
+    position:absolute;top:50%;transform:translate(-50%,-50%);
+    font-family:'Montserrat',sans-serif;font-size:12.5px;font-weight:700;white-space:nowrap;
+  }
+  .t2-gauge-lbl.in{color:#FFFFFF}
+  .t2-gauge-lbl.out{color:var(--uconn-navy)}
+  .t2-gauge-axis{
+    display:flex;justify-content:space-between;max-width:860px;margin-top:6px;
+    font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:var(--uconn-grey);
+  }
+  .t2-piewrap{display:flex;align-items:center;gap:36px;flex-wrap:wrap}
+  #t2-pie svg{display:block;width:230px;height:230px}
+  .t2-legend{display:flex;flex-direction:column;gap:8px;min-width:260px}
+  .t2-legend .lg-row{display:flex;align-items:center;gap:10px;font-size:14px}
+  .t2-legend .lg-row .swatch{flex:none}
+  .t2-legend .lg-row .lg-amt{margin-left:auto;color:var(--uconn-grey);font-size:13px;font-variant-numeric:tabular-nums}
+
+  .diag-wrap{max-width:860px;margin-top:30px;border-top:1px solid var(--line-soft);padding-top:14px}
+  .diag-wrap summary{
+    cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;color:#9AA3B0;list-style-position:inside;
+  }
+  .diag-wrap summary:hover{color:var(--uconn-navy)}
+  .diag-wrap[open] summary{margin-bottom:10px}
+  .t2-diag{
+    padding:12px 14px;background:var(--band);border:1px solid var(--line);
+    font-size:12.5px;color:var(--ink-soft);line-height:1.7;
+  }
+  .t2-diag .ok{color:var(--green);font-weight:600}
+  .t2-diag .bad{color:var(--red);font-weight:600}
+  .err-banner{
+    background:#F8E5E2;border:1px solid var(--red);color:#7A2A22;
+    padding:12px 16px;margin:14px auto;max-width:1060px;font-size:13.5px;
+  }
+
+  /* ============ Events ============ */
+  .ev-month{
+    font-family:'Montserrat',sans-serif;font-size:12.5px;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--uconn-grey);
+    margin:26px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line);
+  }
+  .ev-month:first-child{margin-top:0}
+  .ev-row{
+    display:grid;grid-template-columns:64px 1fr;gap:18px;align-items:start;
+    padding:14px 0;border-bottom:1px solid var(--line);max-width:860px;
+  }
+  .ev-row:last-child{border-bottom:0}
+  .ev-badge{
+    background:var(--uconn-navy);color:#FFFFFF;text-align:center;
+    padding:9px 0 10px;line-height:1.05;border-radius:2px;box-shadow:var(--shadow);
+  }
+  .ev-badge .d{font-family:'Montserrat',sans-serif;font-weight:800;font-size:24px;display:block}
+  .ev-badge .m{font-family:'Montserrat',sans-serif;font-weight:700;font-size:10.5px;letter-spacing:.12em;display:block;margin-top:2px;color:#C9CFDA}
+  .ev-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:16.5px;color:var(--uconn-navy);line-height:1.3}
+  .ev-meta{margin-top:3px;font-size:13.5px;color:var(--uconn-grey);font-weight:600}
+  .ev-meta .sep{margin:0 7px;opacity:.6}
+  .ev-desc{margin-top:5px;font-size:14.5px;color:#4B5563;max-width:640px}
+  .ev-row.next{
+    background:linear-gradient(90deg, var(--blue-t) 0%, rgba(231,236,246,0) 92%);
+    margin-left:-16px;padding-left:16px;border-bottom:1px solid var(--line-soft);
+    border-left:3px solid var(--uconn-navy);
+  }
+  .ev-next-chip{
+    display:inline-block;margin-left:10px;vertical-align:2px;
+    font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;
+    background:var(--uconn-navy);color:#fff;padding:3px 8px;text-transform:uppercase;
+  }
+  .ev-empty{color:var(--uconn-grey);font-size:15px}
+  #ev-past-details summary{
+    cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:700;
+    color:var(--uconn-grey);font-size:14px;letter-spacing:.04em;
+    padding:10px 0;list-style-position:inside;
+  }
+  #ev-past-details summary:hover{color:var(--uconn-navy)}
+  #ev-past .ev-badge{background:var(--grey-t);color:#4B5563}
+  #ev-past .ev-badge .m{color:var(--uconn-grey)}
+  #ev-past .ev-title{color:#4B5563}
+  @media(max-width:520px){
+    .ev-row{grid-template-columns:52px 1fr;gap:12px}
+    .ev-badge .d{font-size:20px}
+  }
+
+  /* ============ Table search ============ */
+  .tbl-search{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .tbl-search input{
+    font-family:'Source Sans 3',sans-serif;font-size:14.5px;
+    padding:10px 14px;border:1px solid var(--line);background:#fff;color:var(--ink);
+    width:100%;max-width:400px;border-radius:2px;transition:border-color .15s,box-shadow .15s;
+  }
+  .tbl-search input::placeholder{color:#9AA3B0}
+  .tbl-search input:focus{
+    outline:none;border-color:var(--uconn-navy);
+    box-shadow:0 0 0 3px rgba(0,14,47,.08);
+  }
+  .tbl-count{font-size:13px;color:var(--uconn-grey);font-weight:600}
+  tr.filtered-out{display:none}
+  .no-results td{padding:16px 14px;color:var(--uconn-grey);font-size:14.5px}
+
+  /* ============ Overview ============ */
+  .ov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;max-width:960px}
+  .ov-card{
+    border:1px solid var(--line);border-top:3px solid var(--uconn-navy);
+    padding:20px 22px;background:#fff;box-shadow:var(--shadow);
+  }
+  .ov-card .k{
+    font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--uconn-grey);
+  }
+  .ov-card .v{
+    font-family:'Montserrat',sans-serif;font-weight:800;color:var(--uconn-navy);
+    font-size:28px;line-height:1.15;margin-top:5px;font-variant-numeric:tabular-nums;
+  }
+  .ov-card .s{font-size:13.5px;color:var(--uconn-grey);margin-top:2px}
+  .ov-next{
+    border:1px solid var(--line);border-left:4px solid var(--uconn-navy);
+    padding:18px 22px;max-width:860px;background:var(--blue-t);
+  }
+  .ov-next .when{
+    font-family:'Montserrat',sans-serif;font-size:11.5px;font-weight:700;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--link);
+  }
+  .ov-next .what{font-family:'Montserrat',sans-serif;font-weight:700;font-size:19px;color:var(--uconn-navy);margin-top:4px}
+  .ov-next .where{font-size:14.5px;color:#4B5563;margin-top:3px}
+  .ov-wins{display:flex;flex-direction:column;gap:0;max-width:860px;border-top:1px solid var(--line)}
+  .ov-win{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);align-items:baseline}
+  .ov-win .tick{color:var(--green);font-weight:700;flex:none}
+  .ov-win .wt{font-size:15px;color:var(--ink)}
+  .ov-win .wn{font-size:13.5px;color:var(--uconn-grey);margin-top:2px}
+  .ov-empty{color:var(--uconn-grey);font-size:15px}
+
+  .type-badge{
+    display:inline-block;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;
+    letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;white-space:nowrap;border-radius:2px;
+  }
+  .type-badge.exo{background:var(--blue-t);color:var(--link)}
+  .type-badge.acad{background:#E9EBF1;color:var(--uconn-navy)}
+  .type-badge.res{background:var(--green-t);color:var(--green)}
+
+  /* ============ Representation / coverage map ============ */
+  .cov-group{margin-bottom:26px}
+  .cov-group.exo h3{color:var(--link)}
+  .cov-group h3{
+    font-family:'Montserrat',sans-serif;font-size:12.5px;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--uconn-grey);
+    margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--line);
+  }
+  .cov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:12px}
+  .cov-cell{
+    border:1px solid var(--line);padding:13px 15px;border-left:3px solid var(--green);
+    background:#fff;box-shadow:var(--shadow);transition:box-shadow .15s;
+  }
+  .cov-cell:hover{box-shadow:var(--shadow-md)}
+  .cov-cell.partial{border-left-color:var(--amber)}
+  .cov-cell.empty{border-left-color:var(--red);background:#FDF7F6}
+  .cov-cell .cname{font-weight:600;font-size:14.5px;line-height:1.25}
+  .cov-cell .cstat{font-size:12.5px;color:var(--uconn-grey);margin-top:3px;font-weight:600}
+  .pips{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+  .pip{width:13px;height:13px;border:1.5px solid var(--uconn-navy);flex:none}
+  .pip.on{background:var(--uconn-navy)}
+  .pip.off{background:transparent;border-color:#B9C1CE}
+  .vac-chip{
+    display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--line);
+    border-left:3px solid var(--red);padding:10px 15px;font-size:14px;
+    background:#fff;box-shadow:var(--shadow);
+  }
+  .vac-chip .n{font-family:'Montserrat',sans-serif;font-weight:800;color:var(--red);font-size:16px}
+  .vac-list{display:flex;flex-wrap:wrap;gap:10px;max-width:960px}
+  .seats-warn{
+    background:var(--amber-t);border:1px solid var(--amber);color:#6B4A00;
+    padding:12px 16px;font-size:13.5px;max-width:860px;margin-top:8px;
+  }
+
+  /* ============ Footer (UConn navy) ============ */
+  footer{background:var(--uconn-navy);color:#A8B4C8;margin-top:24px}
+  .footer-inner{max-width:1100px;margin:0 auto;padding:34px 24px 44px;font-size:14px;line-height:1.65}
+  .footer-inner strong{color:#FFFFFF;font-family:'Montserrat',sans-serif;font-weight:700;letter-spacing:.01em}
+  .footer-inner a{color:#C9D4E8}
+  .footer-inner .fine{
+    margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.12);
+    color:#8894AA;font-size:12.5px;
+  }
+
+  @media(max-width:640px){
+    main{padding:24px 14px 44px}
+    .stat{padding:16px 14px}
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="page-head-inner">
+    <div class="eyebrow">Undergraduate Student Government · University of Connecticut</div>
+    <h1>Public Records Dashboard</h1>
+    <p class="meta" id="lbl-subtitle">Budget, Senate attendance, and legislation records of the Undergraduate Student Government</p>
+    <div class="live-dot" id="asof-text">Live from public records</div>
+  </div>
+</div>
+
+<div class="subnav">
+  <div class="subnav-inner" role="tablist" aria-label="Dashboard sections">
+    <button role="tab" aria-selected="true"  data-tab="overview">Overview</button>
+    <button role="tab" aria-selected="false" data-tab="budget">Budget</button>
+    <button role="tab" aria-selected="false" data-tab="senate">Senate Attendance</button>
+    <button role="tab" aria-selected="false" data-tab="seats">Representation</button>
+    <button role="tab" aria-selected="false" data-tab="legislation">Legislation</button>
+    <button role="tab" aria-selected="false" data-tab="tier2">Tier II Funding</button>
+    <button role="tab" aria-selected="false" data-tab="events">Events</button>
+  </div>
+</div>
+
+<div class="stats-band"><div id="stat-row"></div></div>
+
+<main>
+  <!-- ============ OVERVIEW ============ -->
+  <section id="tab-overview" role="tabpanel">
+    <div class="block">
+      <h2>At a Glance</h2>
+      <p class="desc">A summary of what the Undergraduate Student Government is doing this year. Every figure below comes from the public spreadsheets that feed this site.</p>
+      <div id="ov-cards" class="ov-grid"></div>
+    </div>
+    <div class="block">
+      <h2>What's Next</h2>
+      <div id="ov-next"></div>
+    </div>
+    <div class="block">
+      <h2>Recent Wins</h2>
+      <p class="desc">Legislation that made it all the way to implementation.</p>
+      <div id="ov-wins"></div>
+    </div>
+  </section>
+
+  <!-- ============ BUDGET ============ -->
+  <section id="tab-budget" role="tabpanel" hidden>
+    <div class="block">
+      <h2 id="lbl-budget">Allocations by Category</h2>
+      <p class="desc">Student activity fee funding allocated by USG and spending to date, drawn from the Funding Board ledger.</p>
+      <div class="bchart" id="budget-bars"></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:#C3CCDB"></span>Allocated</span>
+        <span><span class="swatch" style="background:var(--uconn-navy)"></span>Spent to date</span>
+      </div>
+    </div>
+    <div class="block">
+      <h2>Line Items</h2>
+      <p class="desc">Every allocation over $1,000. The full ledger is available from the Comptroller's office.</p>
+      <div class="tbl-search"><input type="search" id="search-budget" data-table="budget-table" placeholder="Search line items or categories…" aria-label="Search budget line items"><span class="tbl-count" id="count-budget-table"></span></div>
+      <div class="table-wrap">
+        <table id="budget-table">
+          <thead><tr><th>Category</th><th>Line item</th><th style="text-align:right">Allocated</th><th style="text-align:right">Spent</th><th style="text-align:right">% used</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SENATE ============ -->
+  <section id="tab-senate" role="tabpanel" hidden>
+    <div class="block">
+      <h2 id="lbl-senate">Senator Attendance</h2>
+      <p class="desc">Attendance at regular Senate meetings. Senators below 60% are flagged under the USG bylaws attendance policy.</p>
+      <div class="tbl-search"><input type="search" id="search-senate" data-table="senate-table" placeholder="Search by senator, constituency, type, or committee…" aria-label="Search senators"><span class="tbl-count" id="count-senate-table"></span></div>
+      <div class="table-wrap">
+        <table id="senate-table">
+          <thead><tr><th>Senator</th><th>Constituency</th><th>Type</th><th>Committee</th><th style="text-align:right">Meetings</th><th>Attendance</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ REPRESENTATION / VACANCY BOARD ============ -->
+  <section id="tab-seats" role="tabpanel" hidden>
+    <div id="seats-setup" class="block">
+      <h2>Representation</h2>
+      <p class="desc">This section isn't connected yet. Import the <strong>Seats</strong> tab into the spreadsheet (columns <strong>Constituency, Type, Seats</strong>), publish it as CSV, and paste its URL into <code>DATA_SOURCES.seats</code> in this file.</p>
+    </div>
+    <div id="seats-content" style="display:none">
+      <div class="block">
+        <h2>Senate Vacancies</h2>
+        <p class="desc">Seats are compared live against the senators listed on the Attendance tab — when someone is added there, the vacancy closes here automatically.</p>
+        <div id="seats-summary" class="ov-grid"></div>
+        <div id="seats-open" style="margin-top:24px"></div>
+      </div>
+      <div class="block">
+        <h2>Constituency Coverage</h2>
+        <p class="desc">Every constituency and how many of its seats are filled. Each square is one seat: navy is filled, hollow is vacant.</p>
+        <div class="tbl-search"><input type="search" id="search-seats" data-table="seats-table" placeholder="Search constituencies…" aria-label="Search constituencies"><span class="tbl-count" id="count-seats-table"></span></div>
+        <div id="seats-map"></div>
+        <div class="table-wrap" style="margin-top:24px">
+          <table id="seats-table">
+            <thead><tr><th>Constituency</th><th>Type</th><th style="text-align:right">Filled</th><th style="text-align:right">Seats</th><th>Coverage</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="seats-warn"></div>
+    </div>
+  </section>
+
+  <!-- ============ LEGISLATION ============ -->
+  <section id="tab-legislation" role="tabpanel" hidden>
+    <div class="block">
+      <h2 id="lbl-leg">Legislation Tracker</h2>
+      <p class="desc">Every resolution and bill, tracked past the vote: Drafted → Passed → Administration responded → Implemented.</p>
+      <div class="tbl-search"><input type="search" id="search-leg" data-table="leg-table" placeholder="Search by bill number, title, sponsor, or status…" aria-label="Search legislation"><span class="tbl-count" id="count-leg-table"></span></div>
+      <div class="table-wrap">
+        <table id="leg-table">
+          <thead><tr><th>Bill</th><th>Title</th><th>Sponsor</th><th>Date</th><th>Lifecycle</th><th>Status</th><th>Outcome note</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TIER II FUNDING ============ -->
+  <section id="tab-tier2" role="tabpanel" hidden>
+    <div id="t2-setup" class="block">
+      <h2>Tier II Funding</h2>
+      <p class="desc">This section isn't connected yet. Create a tab in the spreadsheet named <strong>Tier2</strong> with the column headers <strong>Category, Amount, Notes</strong> in row 1 — one row per funding category, with the running total spent in Amount. Publish that tab as CSV and paste its URL into <code>DATA_SOURCES.tier2</code> in this file.</p>
+    </div>
+    <div id="t2-content" style="display:none">
+      <div class="block">
+        <h2 id="lbl-t2">Tier II Funding — Spent to Date</h2>
+        <p class="desc">Total Tier II student organization funding disbursed this fiscal year, out of the $900,000 allocation. Summed live from the category totals in the spreadsheet.</p>
+        <div class="t2-hero">
+          <div class="t2-big">
+            <div id="t2-counter" class="t2-amount">$0</div>
+            <div class="t2-cap">spent to date</div>
+          </div>
+          <div class="t2-side">
+            <div><span id="t2-remaining" class="t2-mid">$0</span> <span class="t2-cap">remaining</span></div>
+            <div><span id="t2-pct" class="t2-mid">0%</span> <span class="t2-cap">of budget used</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="block">
+        <h2>Remaining Funds</h2>
+        <p class="desc">The $900,000 Tier II allocation: spent so far in navy, remaining in light blue — and below, the balance over time from the timeline log.</p>
+        <div id="t2-gauge"></div>
+        <div id="t2-timeline" class="t2-chart" style="margin-top:26px"></div>
+      </div>
+      <div class="block">
+        <h2>Spending by Category</h2>
+        <p class="desc">Share of Tier II spending by funding category.</p>
+        <div class="t2-piewrap">
+          <div id="t2-pie"></div>
+          <div id="t2-legend" class="t2-legend"></div>
+        </div>
+        <div class="table-wrap" style="margin-top:20px">
+          <table id="t2-table">
+            <thead><tr><th>Category</th><th style="text-align:right">Spent</th><th style="text-align:right">% of spending</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <details id="t2-diag-wrap" class="diag-wrap">
+      <summary>Connection details</summary>
+      <div id="t2-diag" class="t2-diag">Loading…</div>
+    </details>
+  </section>
+
+  <!-- ============ EVENTS ============ -->
+  <section id="tab-events" role="tabpanel" hidden>
+    <div id="ev-setup" class="block">
+      <h2>USG Events</h2>
+      <p class="desc">This section isn't connected yet. Create a tab in the spreadsheet named <strong>Events</strong> with the column headers <strong>Date, Event, Time, Location, Description</strong> in row 1 (or import the pre-built tab), publish that tab as CSV, and paste its URL into <code>DATA_SOURCES.events</code> in this file.</p>
+    </div>
+    <div id="ev-content" style="display:none">
+      <div class="block">
+        <h2>Upcoming Events</h2>
+        <p class="desc">USG meetings, programs, and deadlines. Updated from the Events tab of the public records spreadsheet.</p>
+        <div id="ev-upcoming"></div>
+      </div>
+      <div class="block" id="ev-past-block">
+        <details id="ev-past-details">
+          <summary id="ev-past-summary">Past events</summary>
+          <div id="ev-past"></div>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <p><strong>Undergraduate Student Government</strong> · Student Union Room 219, Storrs, CT</p>
+    <p style="margin-top:6px">Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
+    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v24 — link previews</span></p>
+  </div>
+</footer>
+
+<script>
+/* =====================================================================
+   DATA LAYER — identical to the previous version.
+   ---------------------------------------------------------------------
+   To go live: paste your three published-CSV URLs below and set
+   USE_LIVE_DATA = true. (If you are replacing an index.html that
+   already had your URLs in it, re-paste them here.)
+   ===================================================================== */
+
+const USE_LIVE_DATA = true;
+
+/* =====================================================================
+   LABELS — edit these once a year. Nothing else in this file contains
+   a year or term name. Change them here and every heading updates.
+   ===================================================================== */
+const LABELS = {
+  fiscalYear:   "FY27",           // budget headings
+  senateTerm:   "2026–27",        // attendance headings
+  session:      "2026–27",        // legislation headings
+  tier2Year:    "2026–27",        // Tier II headings
+  subtitle:     "Budget, Tier II funding, Senate attendance, legislation, and events of the Undergraduate Student Government"
+};
+
+/* Tier II allocation for the year. Change this one number if the
+   allocation changes. */
+const TIER2_BUDGET = 900000;
+
+const DATA_SOURCES = {
+  budget:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=1576033671&single=true&output=csv",
+  senate:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=1451398587&single=true&output=csv",
+  legislation: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=173801048&single=true&output=csv",
+  /* Tier II tab: create a sheet tab named "Tier2" with headers
+     Date, Category, Amount, Notes in row 1, publish it as CSV,
+     and paste its URL here (it will have its own gid). */
+  tier2:       "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=1041912330&single=true&output=csv",
+  /* Events tab: import the pre-built Events tab (or create one with headers
+     Date, Event, Time, Location, Description), publish it as CSV, and paste
+     its URL here. */
+  events:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=1814470009&single=true&output=csv",
+  /* Seats tab: import the pre-built Seats tab (Constituency, Type, Seats),
+     publish it as CSV, and paste its URL here. Powers the vacancy board. */
+  seats:       "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=907676392&single=true&output=csv",
+  asOf:        "July 28, 2026"
+};
+
+const SAMPLE = {
+  asOf: "July 28, 2026",
+  budget: [
+    {category:"Tier II Org Funding", item:"Cultural organizations (42 orgs)", allocated:412000, spent:361500},
+    {category:"Tier II Org Funding", item:"Club sports (28 orgs)",            allocated:388000, spent:352200},
+    {category:"Tier II Org Funding", item:"Academic & professional (55 orgs)",allocated:296000, spent:230100},
+    {category:"Tier II Org Funding", item:"Special interest (61 orgs)",       allocated:264000, spent:198700},
+    {category:"USG Operations",      item:"Stipends & payroll",               allocated:158000, spent:118500},
+    {category:"USG Operations",      item:"Office & administrative",          allocated:37000,  spent:21400},
+    {category:"USG Programs",        item:"Late-night programming",           allocated:96000,  spent:74300},
+    {category:"USG Programs",        item:"Legal services partnership",       allocated:52000,  spent:52000},
+    {category:"USG Programs",        item:"Menstrual product program",        allocated:31000,  spent:24800},
+    {category:"Reserves",            item:"Contingency fund",                 allocated:75000,  spent:12000}
+  ],
+  senate: [
+    {name:"M. Okafor",   constituency:"CLAS",            committee:"Funding Board",    attended:14, total:15},
+    {name:"J. Rivera",   constituency:"Engineering",     committee:"Academic Affairs", attended:15, total:15},
+    {name:"S. Chen",     constituency:"Business",        committee:"External Affairs", attended:13, total:15},
+    {name:"A. Dubois",   constituency:"CLAS",            committee:"Student Services", attended:12, total:15},
+    {name:"T. Nguyen",   constituency:"Fine Arts",       committee:"Student Services", attended:14, total:15},
+    {name:"R. Patel",    constituency:"Off-campus",      committee:"Funding Board",    attended:11, total:15},
+    {name:"K. Johnson",  constituency:"Stamford campus", committee:"External Affairs", attended:9,  total:15},
+    {name:"L. Martinez", constituency:"Agriculture",     committee:"Academic Affairs", attended:13, total:15},
+    {name:"D. Brooks",   constituency:"Nursing",         committee:"Student Services", attended:8,  total:15},
+    {name:"E. Kowalski", constituency:"On-campus res.",  committee:"Funding Board",    attended:15, total:15}
+  ],
+  legislation: [
+    {bill:"S26-04", title:"Extend Homer Babbidge Library 24/5 hours during finals", sponsor:"Rivera",  date:"2026-02-11", status:"implemented", note:"Library confirmed 24/5 for May 2026 finals; funded jointly."},
+    {bill:"S26-07", title:"Add evening shuttle loop to Celeron & Carriage",          sponsor:"Patel",   date:"2026-02-25", status:"responded",   note:"Transportation Services piloting Th–Sat route in Fall 2026."},
+    {bill:"S26-09", title:"Syllabus cost transparency at course registration",       sponsor:"Chen",    date:"2026-03-04", status:"passed",      note:"Sent to Provost's office 3/6; awaiting response."},
+    {bill:"S26-11", title:"Expand SHaW same-day mental health triage staffing",      sponsor:"Dubois",  date:"2026-03-25", status:"responded",   note:"SHaW added one triage clinician; monitoring wait times."},
+    {bill:"S26-12", title:"Menstrual products in all academic buildings",            sponsor:"Nguyen",  date:"2026-04-01", status:"implemented", note:"Facilities completed installation in 31 buildings, June 2026."},
+    {bill:"S26-14", title:"Reform Tier II funding appeal timeline",                  sponsor:"Okafor",  date:"2026-04-15", status:"implemented", note:"Internal bylaw change; effective FY27 funding cycle."},
+    {bill:"S26-15", title:"Dining hall hours parity for regional campuses",          sponsor:"Johnson", date:"2026-04-22", status:"stalled",     note:"Dining Services declined citing staffing; revisiting in fall."},
+    {bill:"S26-17", title:"Designated quiet study space in the Student Union",       sponsor:"Brooks",  date:"2026-04-29", status:"passed",      note:"Sent to Student Union admin; awaiting response."}
+  ],
+  tier2: {
+    cats: [
+      {category:"Cultural", amount:97200},
+      {category:"Club Sports", amount:104100},
+      {category:"Academic & Professional", amount:60100},
+      {category:"Special Interest", amount:19750}
+    ],
+    timeline: [
+      {date:"2026-02-01", remaining:900000, t:new Date("2026-02-01").getTime()},
+      {date:"2026-03-01", remaining:812400, t:new Date("2026-03-01").getTime()},
+      {date:"2026-04-01", remaining:731900, t:new Date("2026-04-01").getTime()},
+      {date:"2026-05-01", remaining:668200, t:new Date("2026-05-01").getTime()},
+      {date:"2026-06-01", remaining:618850, t:new Date("2026-06-01").getTime()}
+    ]
+  },
+  events: [
+    {date:"2026-04-22", event:"Spring Involvement Fair", time:"11:00 AM – 2:00 PM", location:"Fairfield Way", desc:"Tabling for 100+ student organizations."},
+    {date:"2026-08-28", event:"First Senate Meeting of Fall 2026", time:"6:30 PM", location:"Student Union 304", desc:"Open to all students. Public comment period at the start of the agenda."},
+    {date:"2026-09-04", event:"Tier II Funding Workshop", time:"5:00 PM", location:"Student Union 322", desc:"Required for org treasurers requesting fall funding."},
+    {date:"2026-09-18", event:"Town Hall with the President's Office", time:"7:00 PM", location:"Konover Auditorium", desc:"Bring questions on housing, dining, and transportation."},
+    {date:"2026-10-02", event:"Funding Application Deadline — Fall Cycle", time:"11:59 PM", location:"Online", desc:"Late applications roll to the spring cycle."}
+  ]
+};
+
+/* ---------- CSV parser (returns raw rows) ---------- */
+function parseCSVRows(text){
+  const rows=[]; let row=[],val="",inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){ if(c==='"'){ if(text[i+1]==='"'){val+='"';i++;} else inQ=false; } else val+=c; }
+    else if(c==='"') inQ=true;
+    else if(c===','){ row.push(val); val=""; }
+    else if(c==='\n'||c==='\r'){ if(val!==""||row.length){row.push(val);rows.push(row);row=[];val="";} }
+    else val+=c;
+  }
+  if(val!==""||row.length){row.push(val);rows.push(row);}
+  return rows;
+}
+
+/* ---------- Header finder ----------
+   The spreadsheet templates have a title row, a subtitle row, and a blank
+   row ABOVE the real column headers, and Google's CSV export includes them.
+   This scans the first rows for the line that actually contains the expected
+   column names, then builds objects from everything below it. Works whether
+   the headers are on line 1 or line 4. */
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toObjects(rawRows, keyHeaders){
+  const norm = s => String(s||"").trim();
+  let headerIdx = -1;
+  for(let i=0; i<Math.min(rawRows.length, 10); i++){
+    const cells = rawRows[i].map(norm);
+    if(keyHeaders.every(h=>cells.includes(h))){ headerIdx=i; break; }
+  }
+  if(headerIdx===-1) return [];   // headers not found — treated as empty, error surfaces via zero rows
+  const head = rawRows[headerIdx].map(norm);
+  /* Values are HTML-escaped here — the one chokepoint every sheet string
+     passes through — so nothing typed into a spreadsheet cell can inject
+     markup into the page. */
+  return rawRows.slice(headerIdx+1)
+    .filter(r=>r.length>1)
+    .map(r=>Object.fromEntries(head.map((h,i)=>[h, esc((r[i]||"").trim())])));
+}
+
+/* Kept for compatibility: parse assuming headers on line 1 */
+function parseCSV(text){
+  const rows = parseCSVRows(text);
+  const [head,...body]=rows;
+  return body.filter(r=>r.length>1).map(r=>Object.fromEntries(head.map((h,i)=>[h.trim(),(r[i]||"").trim()])));
+}
+
+/* ---------- Number cleaning + header mapping ---------- */
+function num(v){
+  const n = parseFloat(String(v ?? "").replace(/[^0-9.\-]/g,""));
+  return isNaN(n) ? 0 : n;
+}
+function mapBudgetRow(r){
+  return {
+    category:  r["Category"],
+    item:      r["Line item"],
+    allocated: num(r["Allocated"]),
+    spent:     num(r["Spent"]),
+  };
+}
+function mapSenateRow(r){
+  return {
+    name:         r["Senator"],
+    constituency: r["Constituency"],
+    committee:    r["Committee"],
+    total:        num(r["Total meetings"]),
+    attended:     num(r["Attended"]),
+  };
+}
+function mapLegislationRow(r){
+  return {
+    bill:    r["Bill #"],
+    title:   r["Title"],
+    sponsor: r["Sponsor"],
+    date:    r["Date passed"],
+    status:  (r["Status"] || "").toLowerCase().replace(/\s+/g,"").replace("adminresponded","responded"),
+    note:    r["Outcome note"],
+  };
+}
+function mapTier2Row(r){
+  return {
+    category: (r["Category"]||"").trim(),
+    amount:   num(r["Amount"]),
+  };
+}
+
+async function loadData(){
+  if(!USE_LIVE_DATA) return SAMPLE;
+  /* Cache-busting: timestamp + no-store so no stale CSV is ever served. */
+  const fresh = u => u + (u.includes("?") ? "&" : "?") + "_cb=" + Date.now();
+  const fetchCSV = u => fetch(fresh(u), {cache:"no-store"}).then(r=>{
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    return r.text();
+  }).then(parseCSVRows);
+
+  /* ALL six sources load in parallel — one request wave instead of a chain.
+     Required sources (banner on failure) and optional sources (setup notice
+     when unconfigured) are declared in one registry. */
+  const SOURCES = [
+    {key:"budget",      name:"Budget",            required:true},
+    {key:"senate",      name:"Senate attendance", required:true},
+    {key:"legislation", name:"Legislation",       required:true},
+    {key:"tier2",       name:"Tier II",           required:false},
+    {key:"events",      name:"Events",            required:false},
+    {key:"seats",       name:"Seats",             required:false},
+  ];
+  const configured = s => DATA_SOURCES[s.key] && !DATA_SOURCES[s.key].startsWith("PASTE");
+  const settled = await Promise.allSettled(SOURCES.map(s =>
+    configured(s) ? fetchCSV(DATA_SOURCES[s.key]) : Promise.reject(new Error("__unconfigured__"))
+  ));
+  const raw = {};
+  SOURCES.forEach((s,i)=>{
+    const res = settled[i];
+    if(res.status==="fulfilled"){ raw[s.key]=res.value; return; }
+    raw[s.key]=null;
+    if(res.reason.message==="__unconfigured__"){
+      if(s.required) reportError(s.name+" data source is not configured in DATA_SOURCES.");
+    } else if(s.required){
+      reportError(s.name+" data failed to load ("+res.reason.message+") — that section will be empty. Check its published CSV URL.");
+    } else if(s.key!=="tier2"){
+      reportError(s.name+" data failed to load ("+res.reason.message+") — check the published "+s.name+" CSV URL.");
+    }
+  });
+
+  /* --- required three --- */
+  const b = toObjects(raw.budget||[], ["Category","Line item","Allocated","Spent"]);
+  const s = toObjects(raw.senate||[], ["Senator","Total meetings","Attended"]);
+  const l = toObjects(raw.legislation||[], ["Bill #","Title","Status"]);
+
+  /* --- Tier II (with diagnostics) --- */
+  let t2 = null;
+  const diag = {configured:false, url:"", http:"", headerCats:false, headerTl:false, catCount:0, tlCount:0, firstLine:"", hint:""};
+  if(configured(SOURCES[3])){
+    diag.configured = true;
+    diag.url = DATA_SOURCES.tier2;
+    if(!/gid=/.test(DATA_SOURCES.tier2)) diag.hint = "URL has no gid= — this is the 'Entire Document' link, which exports only the first tab. Republish selecting the Tier2 tab specifically.";
+    if(raw.tier2){
+      diag.http = "200 OK";
+      diag.firstLine = (raw.tier2[0]||[]).join(", ").slice(0,120);
+      const catsObjs = toObjects(raw.tier2, ["Category","Amount"]);
+      const tlObjs   = toObjects(raw.tier2, ["Date","Remaining"]);
+      diag.headerCats = catsObjs.length>0 || raw.tier2.some(r=>r.map(c=>String(c).trim()).includes("Category") && r.map(c=>String(c).trim()).includes("Amount"));
+      diag.headerTl   = tlObjs.length>0   || raw.tier2.some(r=>r.map(c=>String(c).trim()).includes("Date") && r.map(c=>String(c).trim()).includes("Remaining"));
+      if(!diag.headerCats && raw.tier2.some(r=>r.map(c=>String(c).trim()).includes("Allocated")))
+        diag.hint = "This URL is serving the Budget tab, not Tier2 — republish and select the Tier2 tab in the first dropdown.";
+      const cats = catsObjs.map(mapTier2Row).filter(r=>r.category && r.amount>0);
+      const timeline = tlObjs
+        .filter(r=>(r["Date"]||"").trim() && (r["Remaining"]||"").trim())  /* both cells must be filled */
+        .map(r=>({date:(r["Date"]||"").trim(), remaining:num(r["Remaining"]), t:parseSheetDate((r["Date"]||"").trim())}))
+        .filter(r=>!isNaN(r.t))
+        .sort((a,b)=>a.t-b.t);
+      diag.catCount = cats.length; diag.tlCount = timeline.length;
+      t2 = {cats, timeline};
+    } else {
+      const res = settled[3];
+      diag.http = "fetch failed: " + (res.reason ? res.reason.message : "unknown");
+    }
+  }
+  window.__t2diag = diag;
+
+  /* --- events --- */
+  let ev = null;
+  if(raw.events){
+    ev = toObjects(raw.events, ["Date","Event"]).map(r=>({
+      date:(r["Date"]||"").trim(),
+      event:(r["Event"]||"").trim(),
+      time:(r["Time"]||"").trim(),
+      location:(r["Location"]||"").trim(),
+      desc:(r["Description"]||"").trim(),
+    })).filter(r=>r.event && r.date);
+  }
+
+  /* --- seats --- */
+  let seats = null;
+  if(raw.seats){
+    seats = toObjects(raw.seats, ["Constituency","Seats"]).map(r=>({
+      constituency:(r["Constituency"]||"").trim(),
+      type:(r["Type"]||"").trim(),
+      seats:num(r["Seats"]),
+    })).filter(r=>r.constituency && r.seats>0
+               && !/^total/i.test(r.constituency));   /* skip the sheet's TOTAL SEATS row */
+  }
+
+  return {
+    asOf: DATA_SOURCES.asOf,
+    budget: b.map(mapBudgetRow).filter(r=>{
+      const cat=(r.category||"").trim(), item=(r.item||"").trim();
+      if(!cat && !item) return false;                 // blank entry rows
+      if(cat.toUpperCase()==="TOTAL" || item.toUpperCase()==="TOTAL") return false; // sheet's TOTAL row
+      return !!cat;
+    }),
+    senate: s.map(mapSenateRow).filter(r=>r.name),
+    legislation: l.map(mapLegislationRow).filter(r=>r.bill),
+    tier2: t2,
+    events: ev,
+    seats: seats
+  };
+}
+
+/* ---------- Helpers ---------- */
+/* Shared constituency-name normalizer (case / spacing / hyphen tolerant) */
+const normKey = s => String(s||"").trim().toLowerCase().replace(/[\s\-_]+/g," ");
+/* Shared event prep: attach timestamps, drop invalid dates, sort ascending */
+function prepEvents(events){
+  return (events||[]).map(e=>({...e, t: e.t ?? new Date(e.date).getTime()}))
+    .filter(e=>!isNaN(e.t)).sort((a,b)=>a.t-b.t);
+}
+const todayT = ()=>{ const t=new Date(); t.setHours(0,0,0,0); return t.getTime(); };
+/* Robust date parser for sheet cells: handles "2026-08-12", "8/12/2026",
+   "8/12/26", and yearless "8/12" (assumed current year — plain Date() would
+   silently read that as the year 2001 and wreck the time axis). */
+function parseSheetDate(s){
+  s = String(s||"").trim();
+  if(!s) return NaN;
+  const t = new Date(s).getTime();
+  if(isNaN(t)) return NaN;
+  /* Yearless "8/12" — Date() silently reads it as the year 2001; pin it to
+     the current year instead. Checked first, before any year validation. */
+  if(/^\d{1,2}[\/\-]\d{1,2}$/.test(s)){
+    const d=new Date(t); d.setFullYear(new Date().getFullYear()); return d.getTime();
+  }
+  const y = new Date(t).getFullYear();
+  if(y < 100){ const d=new Date(t); d.setFullYear(y+2000); return d.getTime(); }  /* "8/12/26" parsed as year 26 */
+  return t;
+}
+const fmt$ = n => "$" + n.toLocaleString("en-US");
+const pct  = (a,b) => b ? Math.round(100*a/b) : 0;
+const STATUS_LABEL = {drafted:"Drafted", passed:"Passed", responded:"Admin responded", implemented:"Implemented", stalled:"Stalled"};
+const STAGE_ORDER  = ["drafted","passed","responded","implemented"];
+
+/* ---------- Render: summary stats ---------- */
+function renderStats(d){
+  const alloc = d.budget.reduce((s,r)=>s+r.allocated,0);
+  const spent = d.budget.reduce((s,r)=>s+r.spent,0);
+  const withMtgs = d.senate.filter(r=>r.total>0);
+  const att = withMtgs.length
+    ? pct(withMtgs.reduce((s,r)=>s+r.attended,0), withMtgs.reduce((s,r)=>s+r.total,0)) : null;
+  const passed = d.legislation.filter(r=>r.status!=="drafted").length;
+  const impl   = d.legislation.filter(r=>r.status==="implemented").length;
+  const seated = d.seats ? d.seats.reduce((x,r)=>x+r.seats,0) : null;
+  document.getElementById("stat-row").innerHTML = `
+    <div class="stat"><div class="label">${LABELS.fiscalYear} Allocated</div><div class="value">${fmt$(alloc)}</div><div class="sub">${pct(spent,alloc)}% spent to date</div></div>
+    <div class="stat"><div class="label">Senate Seated</div><div class="value">${d.senate.length}${seated?" / "+seated:""}</div><div class="sub">${seated?pct(d.senate.length,seated)+"% of seats filled":"senators"} · ${LABELS.senateTerm}</div></div>
+    <div class="stat"><div class="label">Avg. Attendance</div><div class="value">${att!==null?att+"%":"—"}</div><div class="sub">${att!==null?"across recorded meetings":"begins with the first meeting"}</div></div>
+    <div class="stat"><div class="label">Bills Implemented</div><div class="value">${impl}</div><div class="sub">of ${passed} passed · ${LABELS.session} session</div></div>`;
+}
+
+/* ---------- Render: budget ---------- */
+function renderBudget(d){
+  const cats={};
+  d.budget.forEach(r=>{
+    cats[r.category] ??= {allocated:0,spent:0};
+    cats[r.category].allocated+=r.allocated;
+    cats[r.category].spent+=r.spent;
+  });
+
+  /* Sort: largest allocation first, always */
+  const sorted = Object.entries(cats).sort((a,b)=>b[1].allocated-a[1].allocated);
+  const max = sorted.length ? sorted[0][1].allocated : 0;
+
+  document.getElementById("budget-bars").innerHTML = sorted.map(([name,c])=>{
+    const wAlloc = max ? (100*c.allocated/max) : 0;
+    const wSpent = max ? (100*c.spent/max) : 0;
+    const used   = pct(c.spent,c.allocated);
+    return `
+    <div class="b-row">
+      <div class="b-name">${name}</div>
+      <div class="b-track">
+        <div class="b-alloc" data-w="${wAlloc.toFixed(2)}"></div>
+        <div class="b-spent" data-w="${wSpent.toFixed(2)}"></div>
+        <div class="b-pct" data-l="${wSpent.toFixed(2)}">${used}% used</div>
+      </div>
+      <div class="b-vals">
+        <div class="spent-amt">${fmt$(c.spent)}</div>
+        <div class="alloc-amt">of ${fmt$(c.allocated)} allocated</div>
+      </div>
+    </div>`;
+  }).join("");
+
+  document.querySelector("#budget-table tbody").innerHTML = [...d.budget]
+    .sort((a,b)=>b.allocated-a.allocated)
+    .map(r=>`
+    <tr><td>${r.category}</td><td>${r.item}</td>
+    <td class="num" style="text-align:right">${fmt$(r.allocated)}</td>
+    <td class="num" style="text-align:right">${fmt$(r.spent)}</td>
+    <td class="num" style="text-align:right">${pct(r.spent,r.allocated)}%</td></tr>`).join("");
+
+  /* Animate bar widths and place the % label just after the spent fill.
+     If the fill is nearly full, cap the label position and flip it to
+     white-on-navy so it never runs off the end of the track. */
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    document.querySelectorAll(".b-alloc,.b-spent").forEach(el=>el.style.width=el.dataset.w+"%");
+    document.querySelectorAll(".b-pct").forEach(el=>{
+      const l = parseFloat(el.dataset.l);
+      if(l > 72){ el.style.left = "auto"; el.style.right = "8px"; el.classList.add("on-fill"); }
+      else el.style.left = l + "%";
+    });
+  }));
+}
+
+/* ---------- Render: senate ---------- */
+function renderSenate(d){
+  /* Look up each senator's type (Academic / Residential / Ex-Officio) from
+     the Seats tab, tolerating case, spacing, and hyphen differences. */
+  const typeOf = {};
+  (d.seats||[]).forEach(s=>{ typeOf[normKey(s.constituency)] = s.type || ""; });
+  const typeCell = c => {
+    const t = typeOf[normKey(c)] || "";
+    if(!t) return "";
+    const cls = t==="Ex-Officio" ? "exo" : t==="Academic" ? "acad" : t==="Residential" ? "res" : "";
+    const label = t==="Ex-Officio" ? "Ex Officio" : t;
+    return `<span class="type-badge ${cls}">${label}</span>`;
+  };
+
+  const rows=[...d.senate].sort((a,b)=>
+    pct(b.attended,b.total)-pct(a.attended,a.total) || a.name.localeCompare(b.name));
+  document.querySelector("#senate-table tbody").innerHTML = rows.map(r=>{
+    if(!r.total){  /* no meetings recorded yet — show neutral dash, not a red 0% */
+      return `<tr><td>${r.name}</td><td>${r.constituency}</td><td>${typeCell(r.constituency)}</td><td>${r.committee||""}</td>
+        <td class="num" style="text-align:right">—</td>
+        <td style="color:var(--uconn-grey);font-size:13px">No meetings recorded yet</td></tr>`;
+    }
+    const p=pct(r.attended,r.total);
+    const color = p>=80 ? "var(--green)" : p>=60 ? "var(--amber)" : "var(--red)";
+    return `<tr><td>${r.name}</td><td>${r.constituency}</td><td>${typeCell(r.constituency)}</td><td>${r.committee||""}</td>
+      <td class="num" style="text-align:right">${r.attended}/${r.total}</td>
+      <td><span class="att-track"><span class="att-fill" style="width:${p}%;background:${color}"></span></span>
+      <span class="num" style="margin-left:9px">${p}%</span></td></tr>`;
+  }).join("");
+}
+
+/* ---------- Render: Tier II ---------- */
+const T2_COLORS = ["#000E2F","#1F5FD0","#7C878E","#5E8FBF","#3F4760","#2E7D46","#996A00","#A6382E","#94A7C4","#C3CCDB"];
+
+function renderTier2(d){
+  const setup = document.getElementById("t2-setup");
+  const content = document.getElementById("t2-content");
+  const diagEl = document.getElementById("t2-diag");
+  if(!setup || !content){ reportError("Tier II section markup is missing (t2-setup/t2-content) — the deployed index.html may be incomplete."); return; }
+
+  /* Diagnostics readout — always shown, plain-language status of each step */
+  const dg = window.__t2diag;
+  if(diagEl){
+    if(!dg){
+      diagEl.innerHTML = `Showing local sample data (USE_LIVE_DATA is off).`;
+    } else {
+      const yn = b => b ? `<span class="ok">yes</span>` : `<span class="bad">no</span>`;
+      diagEl.innerHTML = `Tier2 URL configured: ${yn(dg.configured)}${dg.configured ? ` · Fetch: ${dg.http||"—"}` : ""}<br>
+        ${dg.configured ? `Found "Category/Amount" headers: ${yn(dg.headerCats)} · rows read: ${dg.catCount}<br>
+        Found "Date/Remaining" headers: ${yn(dg.headerTl)} · timeline entries: ${dg.tlCount}<br>` : ""}
+        ${dg.hint ? `<span class="bad">→ ${dg.hint}</span><br>` : ""}
+        ${dg.configured && dg.firstLine ? `First line of the CSV being received: <em>${dg.firstLine}</em>` : ""}`;
+    }
+  }
+
+  if(!d.tier2){ setup.style.display="block"; content.style.display="none"; return; }
+  setup.style.display="none"; content.style.display="block";
+
+  const rows = d.tier2.cats || [];
+  const timeline = d.tier2.timeline || [];
+  const total = rows.reduce((s,r)=>s+r.amount,0);
+  const remaining = Math.max(0, TIER2_BUDGET - total);
+
+  /* --- Counter (animated count-up) --- */
+  const counterEl = document.getElementById("t2-counter");
+  document.getElementById("t2-remaining").textContent = fmt$(remaining);
+  document.getElementById("t2-pct").textContent = pct(total, TIER2_BUDGET) + "%";
+  const dur = 900, t0 = performance.now();
+  (function tick(now){
+    const p = Math.min(1,(now-t0)/dur), ease = 1-Math.pow(1-p,3);
+    counterEl.textContent = fmt$(Math.round(total*ease));
+    if(p<1) requestAnimationFrame(tick);
+  })(t0);
+
+  /* --- Gauge: current spent vs remaining on the $900k bar --- */
+  const spentPct = Math.min(100, 100*total/TIER2_BUDGET);
+  document.getElementById("t2-gauge").innerHTML = `
+    <div class="t2-gaugebar">
+      <div class="t2-gauge-spent" style="width:${spentPct.toFixed(2)}%"></div>
+      ${spentPct>8 ? `<div class="t2-gauge-lbl in" style="left:${(spentPct/2).toFixed(2)}%">${fmt$(total)} spent</div>` : ""}
+      ${spentPct<92 ? `<div class="t2-gauge-lbl out" style="left:${((spentPct+100)/2).toFixed(2)}%">${fmt$(remaining)} remaining</div>` : ""}
+    </div>
+    <div class="t2-gauge-axis"><span>$0</span><span>${fmt$(TIER2_BUDGET)}</span></div>`;
+
+  /* --- Timeline line chart from the Date/Remaining log --- */
+  const lineEl = document.getElementById("t2-timeline");
+  if(timeline.length >= 1){
+    const W=860,H=300,padL=64,padR=16,padT=14,padB=34;
+    const iw=W-padL-padR, ih=H-padT-padB;
+    const single = timeline.length===1;
+    const tMin=timeline[0].t, tMax=timeline[timeline.length-1].t;
+    const span=Math.max(1,tMax-tMin);
+    const x=p=> single ? padL+iw/2 : padL + iw*(p.t-tMin)/span;
+    const y=v=>padT + ih*(1 - Math.min(v,TIER2_BUDGET)/TIER2_BUDGET);
+    const line = timeline.map((p,i)=>`${i?"L":"M"}${x(p).toFixed(1)},${y(p.remaining).toFixed(1)}`).join(" ");
+    const area = single ? "" : line + ` L${x(timeline[timeline.length-1]).toFixed(1)},${y(0)} L${x(timeline[0]).toFixed(1)},${y(0)} Z`;
+    const grid = [0,.25,.5,.75,1].map(f=>{
+      const v=TIER2_BUDGET*f, yy=y(v).toFixed(1);
+      return `<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="#E4E7EC" stroke-width="1"/>
+              <text x="${padL-8}" y="${+yy+4}" text-anchor="end" font-size="11" fill="#7C878E" font-family="Montserrat,sans-serif">$${Math.round(v/1000)}k</text>`;
+    }).join("");
+    lineEl.innerHTML = `
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Remaining Tier II funds over time">
+        ${grid}
+        ${area ? `<path d="${area}" fill="rgba(0,14,47,0.07)"/>` : ""}
+        ${single ? "" : `<path d="${line}" fill="none" stroke="#000E2F" stroke-width="2.5"/>`}
+        ${timeline.map(p=>`<circle cx="${x(p).toFixed(1)}" cy="${y(p.remaining).toFixed(1)}" r="${single?5:3.5}" fill="#000E2F"><title>${shortDate(p.t)}: ${fmt$(p.remaining)}</title></circle>`).join("")}
+        ${single ? `<text x="${x(timeline[0]).toFixed(1)}" y="${(y(timeline[0].remaining)-14).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="#000E2F" font-family="Montserrat,sans-serif">${shortDate(tMin)} · ${fmt$(timeline[0].remaining)}</text>` : ""}
+        <text x="${padL}" y="${H-10}" font-size="11" fill="#7C878E" font-family="Montserrat,sans-serif">${shortDate(tMin)}</text>
+        ${single ? "" : `<text x="${W-padR}" y="${H-10}" text-anchor="end" font-size="11" fill="#7C878E" font-family="Montserrat,sans-serif">${shortDate(tMax)}</text>`}
+      </svg>
+      ${single ? `<p class="desc" style="color:var(--uconn-grey);margin-top:8px">One entry logged so far — the line appears with the next dated entry in the Tier2 tab's log (Date + Remaining columns).</p>` : ""}`;
+  } else {
+    const dgc = window.__t2diag || {};
+    lineEl.innerHTML = `<p class="desc" style="color:var(--uconn-grey)">No usable timeline entries found in the Tier2 tab's log yet. Each log row needs BOTH a Date and a Remaining amount filled in${dgc.headerTl===false ? " — and the log's column headers must read exactly \u201cDate\u201d and \u201cRemaining\u201d" : ""}. Rows missing either cell are skipped.</p>`;
+  }
+
+  /* --- Category donut + legend + table --- */
+  const cats={};
+  rows.forEach(r=>{ cats[r.category]=(cats[r.category]||0)+r.amount; });  /* merges any duplicate category rows */
+  if(total===0){
+    document.getElementById("t2-pie").innerHTML="";
+    document.getElementById("t2-legend").innerHTML=`<p class="desc" style="color:var(--uconn-grey)">No category totals recorded yet.</p>`;
+    document.querySelector("#t2-table tbody").innerHTML="";
+    return;
+  }
+  const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const R=80, CX=115, CY=115, SW=42, circ=2*Math.PI*R;
+  let off=0;
+  const slices = sorted.map(([name,amt],i)=>{
+    const frac=amt/total, len=frac*circ;
+    const s=`<circle cx="${CX}" cy="${CY}" r="${R}" fill="none"
+      stroke="${T2_COLORS[i%T2_COLORS.length]}" stroke-width="${SW}"
+      stroke-dasharray="${len.toFixed(2)} ${(circ-len).toFixed(2)}"
+      stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 ${CX} ${CY})"/>`;
+    off+=len; return s;
+  }).join("");
+  document.getElementById("t2-pie").innerHTML = `
+    <svg viewBox="0 0 230 230" role="img" aria-label="Tier II spending by category">
+      ${slices}
+      <text x="${CX}" y="${CY-4}" text-anchor="middle" font-size="17" font-weight="800" fill="#000E2F" font-family="Montserrat,sans-serif">${fmt$(total)}</text>
+      <text x="${CX}" y="${CY+15}" text-anchor="middle" font-size="10" fill="#7C878E" font-family="Montserrat,sans-serif" letter-spacing="1">SPENT</text>
+    </svg>`;
+  document.getElementById("t2-legend").innerHTML = sorted.map(([name,amt],i)=>`
+    <div class="lg-row"><span class="swatch" style="background:${T2_COLORS[i%T2_COLORS.length]}"></span>
+    <span>${name}</span><span class="lg-amt">${fmt$(amt)} · ${pct(amt,total)}%</span></div>`).join("");
+  document.querySelector("#t2-table tbody").innerHTML = sorted.map(([name,amt])=>`
+    <tr><td>${name}</td><td class="num" style="text-align:right">${fmt$(amt)}</td>
+    <td class="num" style="text-align:right">${pct(amt,total)}%</td></tr>`).join("");
+}
+function shortDate(t){
+  return new Date(t).toLocaleDateString("en-US",{month:"short",day:"numeric"});
+}
+
+/* ---------- Render: events ---------- */
+function evRow(e, isNext){
+  const d = new Date(e.t);
+  const day = d.getDate();
+  const mon = d.toLocaleDateString("en-US",{month:"short"}).toUpperCase();
+  const meta = [e.time, e.location].filter(Boolean).join(`<span class="sep">·</span>`);
+  return `<div class="ev-row${isNext ? " next" : ""}">
+    <div class="ev-badge"><span class="d">${day}</span><span class="m">${mon}</span></div>
+    <div>
+      <div class="ev-title">${e.event}${isNext ? `<span class="ev-next-chip">Next</span>` : ""}</div>
+      ${meta ? `<div class="ev-meta">${meta}</div>` : ""}
+      ${e.desc ? `<div class="ev-desc">${e.desc}</div>` : ""}
+    </div>
+  </div>`;
+}
+function renderEvents(d){
+  const setup = document.getElementById("ev-setup");
+  const content = document.getElementById("ev-content");
+  if(!setup || !content) return;
+  if(!d.events){ setup.style.display="block"; content.style.display="none"; return; }
+  setup.style.display="none"; content.style.display="block";
+
+  const withT = prepEvents(d.events);
+  const now = todayT();
+  const upcoming = withT.filter(e=>e.t >= now);
+  const past = withT.filter(e=>e.t < now).reverse(); // most recent first
+
+  const upEl = document.getElementById("ev-upcoming");
+  if(!upcoming.length){
+    upEl.innerHTML = `<p class="ev-empty">No upcoming events posted yet — check back soon.</p>`;
+  } else {
+    let html="", lastMonth="";
+    upcoming.forEach((e,i)=>{
+      const m = new Date(e.t).toLocaleDateString("en-US",{month:"long",year:"numeric"});
+      if(m!==lastMonth){ html += `<div class="ev-month">${m}</div>`; lastMonth=m; }
+      html += evRow(e, i===0);
+    });
+    upEl.innerHTML = html;
+  }
+
+  const pastBlock = document.getElementById("ev-past-block");
+  if(!past.length){ pastBlock.style.display="none"; }
+  else{
+    pastBlock.style.display="block";
+    document.getElementById("ev-past-summary").textContent = `Past events (${past.length})`;
+    document.getElementById("ev-past").innerHTML = past.map(e=>evRow(e,false)).join("");
+  }
+}
+
+/* ---------- Render: overview (landing tab) ---------- */
+function renderOverview(d){
+  const alloc = d.budget.reduce((s,r)=>s+r.allocated,0);
+  const spent = d.budget.reduce((s,r)=>s+r.spent,0);
+  const senators = d.senate.length;
+  const withMtgs = d.senate.filter(r=>r.total>0);
+  const att = withMtgs.length
+    ? pct(withMtgs.reduce((s,r)=>s+r.attended,0), withMtgs.reduce((s,r)=>s+r.total,0))
+    : null;
+  const bills = d.legislation.length;
+  const impl = d.legislation.filter(r=>r.status==="implemented").length;
+  const t2spent = d.tier2 ? (d.tier2.cats||[]).reduce((s,r)=>s+r.amount,0) : null;
+
+  const cards = [
+    {k:LABELS.fiscalYear+" Budget Allocated", v:fmt$(alloc), s:`${pct(spent,alloc)}% spent to date`},
+    {k:"Senators Seated", v:String(senators), s: att!==null ? `${att}% average attendance` : "Attendance logging begins with the first meeting"},
+    {k:"Bills Tracked", v:String(bills), s:`${impl} fully implemented`},
+  ];
+  if(t2spent!==null) cards.push({k:"Tier II Funding Spent", v:fmt$(t2spent), s:`${fmt$(Math.max(0,TIER2_BUDGET-t2spent))} remaining of ${fmt$(TIER2_BUDGET)}`});
+  document.getElementById("ov-cards").innerHTML = cards.map(c=>
+    `<div class="ov-card"><div class="k">${c.k}</div><div class="v">${c.v}</div><div class="s">${c.s}</div></div>`).join("");
+
+  /* Next event */
+  const nextEl = document.getElementById("ov-next");
+  const next = prepEvents(d.events).find(e=>e.t>=todayT());
+  if(next){
+    const when = new Date(next.t).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+    const where = [next.time,next.location].filter(Boolean).join(" · ");
+    nextEl.innerHTML = `<div class="ov-next">
+      <div class="when">${when}</div>
+      <div class="what">${next.event}</div>
+      ${where?`<div class="where">${where}</div>`:""}
+      ${next.desc?`<div class="where">${next.desc}</div>`:""}
+    </div>`;
+  } else {
+    nextEl.innerHTML = `<p class="ov-empty">No upcoming events posted.${d.events?"":" Connect the Events tab to show them here."}</p>`;
+  }
+
+  /* Recent implemented legislation */
+  const wins = d.legislation.filter(r=>r.status==="implemented").slice(-5).reverse();
+  document.getElementById("ov-wins").innerHTML = wins.length
+    ? `<div class="ov-wins">` + wins.map(w=>`<div class="ov-win"><span class="tick">✓</span>
+        <div><div class="wt">${w.title}</div>${w.note?`<div class="wn">${w.note}</div>`:""}</div></div>`).join("") + `</div>`
+    : `<p class="ov-empty">No legislation has reached implementation yet this session.</p>`;
+}
+
+/* ---------- Table search (pure display filter — never touches data) ---------- */
+function wireTableSearch(){
+  document.querySelectorAll(".tbl-search input").forEach(input=>{
+    const tableId = input.dataset.table;
+    const countEl = document.getElementById("count-"+tableId);
+    const apply = ()=>{
+      const q = input.value.trim().toLowerCase();
+      const tbody = document.querySelector("#"+tableId+" tbody");
+      if(!tbody) return;
+      const rows = [...tbody.querySelectorAll("tr")].filter(r=>!r.classList.contains("no-results"));
+      let shown = 0;
+      rows.forEach(r=>{
+        const hit = !q || r.textContent.toLowerCase().includes(q);
+        r.classList.toggle("filtered-out", !hit);
+        if(hit) shown++;
+      });
+      /* "no results" row */
+      let nr = tbody.querySelector("tr.no-results");
+      if(shown===0 && q){
+        if(!nr){
+          nr = document.createElement("tr");
+          nr.className = "no-results";
+          const cols = document.querySelectorAll("#"+tableId+" thead th").length || 1;
+          nr.innerHTML = `<td colspan="${cols}">No matches for “${q.replace(/</g,"&lt;")}”.</td>`;
+          tbody.appendChild(nr);
+        } else {
+          nr.querySelector("td").innerHTML = `No matches for “${q.replace(/</g,"&lt;")}”.`;
+          nr.style.display = "";
+        }
+      } else if(nr){ nr.style.display = "none"; }
+      countEl.textContent = q ? `${shown} of ${rows.length} shown` : "";
+    };
+    input.addEventListener("input", apply);
+    input.__apply = apply;   /* re-applied after re-renders */
+  });
+}
+function reapplySearches(){
+  document.querySelectorAll(".tbl-search input").forEach(i=>{ if(i.__apply && i.value) i.__apply(); });
+}
+
+/* ---------- Render: representation / vacancy board ---------- */
+function renderSeats(d){
+  const setup=document.getElementById("seats-setup");
+  const content=document.getElementById("seats-content");
+  if(!setup||!content) return;
+  if(!d.seats){ setup.style.display="block"; content.style.display="none"; return; }
+  setup.style.display="none"; content.style.display="block";
+
+  /* Count seated senators per constituency (case/spacing tolerant) */
+  const filledBy = {};
+  d.senate.forEach(s=>{ const k=normKey(s.constituency); if(k) filledBy[k]=(filledBy[k]||0)+1; });
+
+  const rows = d.seats.map(s=>{
+    const filled = Math.min(s.seats, filledBy[normKey(s.constituency)]||0);
+    return {...s, filled, vacant:Math.max(0,s.seats-filled)};
+  }).sort((a,b)=> b.vacant-a.vacant || a.constituency.localeCompare(b.constituency));
+
+  const totalSeats=rows.reduce((x,r)=>x+r.seats,0);
+  const totalFilled=rows.reduce((x,r)=>x+r.filled,0);
+  const totalVacant=totalSeats-totalFilled;
+  const fullyEmpty=rows.filter(r=>r.filled===0).length;
+
+  document.getElementById("seats-summary").innerHTML = `
+    <div class="ov-card"><div class="k">Seats Filled</div><div class="v">${totalFilled} / ${totalSeats}</div><div class="s">${pct(totalFilled,totalSeats)}% of the Senate seated</div></div>
+    <div class="ov-card"><div class="k">Open Seats</div><div class="v">${totalVacant}</div><div class="s">across ${rows.filter(r=>r.vacant>0).length} constituencies</div></div>
+    <div class="ov-card"><div class="k">Unrepresented</div><div class="v">${fullyEmpty}</div><div class="s">constituencies with no senator at all</div></div>`;
+
+  /* Open seats board */
+  const open = rows.filter(r=>r.vacant>0);
+  document.getElementById("seats-open").innerHTML = open.length
+    ? `<div class="vac-list">` + open.map(r=>
+        `<span class="vac-chip"><span class="n">${r.vacant}</span><span>${r.constituency}${r.filled===0?" — no representation":""}</span></span>`).join("") + `</div>`
+    : `<p class="ov-empty">Every Senate seat is currently filled.</p>`;
+
+  /* Coverage map, grouped by type */
+  const ORDER={"Academic":0,"Residential":1,"Ex-Officio":2};
+  const types=[...new Set(rows.map(r=>r.type||"Other"))]
+    .sort((a,b)=>(ORDER[a]??9)-(ORDER[b]??9) || a.localeCompare(b));
+  document.getElementById("seats-map").innerHTML = types.map(t=>{
+    const group=rows.filter(r=>(r.type||"Other")===t).sort((a,b)=>a.constituency.localeCompare(b.constituency));
+    return `<div class="cov-group${t==="Ex-Officio"?" exo":""}"><h3>${t==="Ex-Officio"?"Ex Officio — Cultural Centers & Affiliated Organizations":t}</h3><div class="cov-grid">` + group.map(r=>{
+      const cls = r.filled===0 ? "empty" : r.filled<r.seats ? "partial" : "";
+      const pips = Array.from({length:r.seats},(_,i)=>
+        `<span class="pip ${i<r.filled?"on":"off"}"></span>`).join("");
+      return `<div class="cov-cell ${cls}">
+        <div class="cname">${r.constituency}</div>
+        <div class="cstat">${r.filled} of ${r.seats} filled${r.vacant?` · ${r.vacant} open`:""}</div>
+        <div class="pips">${pips}</div></div>`;
+    }).join("") + `</div></div>`;
+  }).join("");
+
+  /* Table */
+  document.querySelector("#seats-table tbody").innerHTML = rows.map(r=>{
+    const p=pct(r.filled,r.seats);
+    const color = p===100 ? "var(--green)" : p>0 ? "var(--amber)" : "var(--red)";
+    return `<tr><td>${r.constituency}</td><td>${r.type||""}</td>
+      <td class="num" style="text-align:right">${r.filled}</td>
+      <td class="num" style="text-align:right">${r.seats}</td>
+      <td><span class="att-track"><span class="att-fill" style="width:${p}%;background:${color}"></span></span>
+      <span class="num" style="margin-left:9px">${p}%</span></td></tr>`;
+  }).join("");
+
+  /* Warn about senators whose constituency doesn't match any seat row */
+  const known=new Set(d.seats.map(s=>normKey(s.constituency)));
+  const orphans=[...new Set(d.senate.map(s=>s.constituency).filter(c=>c && !known.has(normKey(c))))];
+  document.getElementById("seats-warn").innerHTML = orphans.length
+    ? `<div class="seats-warn"><strong>Heads up:</strong> ${orphans.length} constituency name${orphans.length>1?"s":""} on the Attendance tab ${orphans.length>1?"do":"does"} not match any row on the Seats tab, so ${orphans.length>1?"those senators are":"that senator is"} not counted as filling a seat: ${orphans.map(o=>`“${o}”`).join(", ")}. Fix the spelling in either tab so they match.</div>`
+    : "";
+}
+
+/* ---------- Render: legislation ---------- */
+function pipeline(status){
+  if(status==="stalled"){
+    return `<span class="pipe" title="Passed, then stalled">
+      <span class="p-dot on"></span><span class="p-seg on"></span>
+      <span class="p-dot on"></span><span class="p-seg stall"></span>
+      <span class="p-dot stall"></span><span class="p-seg"></span><span class="p-dot"></span></span>`;
+  }
+  const idx=STAGE_ORDER.indexOf(status);
+  return `<span class="pipe" title="${STATUS_LABEL[status]||status}">`+STAGE_ORDER.map((s,i)=>
+    `<span class="p-dot ${i<=idx?"on":""}"></span>${i<3?`<span class="p-seg ${i<idx?"on":""}"></span>`:""}`
+  ).join("")+`</span>`;
+}
+function renderLegislation(d){
+  document.querySelector("#leg-table tbody").innerHTML = d.legislation.map(r=>`
+    <tr><td class="num">${r.bill}</td><td>${r.title}</td><td>${r.sponsor}</td>
+    <td class="num">${r.date}</td><td>${pipeline(r.status)}</td>
+    <td><span class="chip ${r.status}">${STATUS_LABEL[r.status]||r.status}</span></td>
+    <td style="color:#4B5563;max-width:280px">${r.note}</td></tr>`).join("");
+}
+
+/* ---------- Tabs + deep links ---------- */
+const VALID_TABS = ["overview","budget","senate","seats","legislation","tier2","events"];
+
+function showTab(name, updateHash){
+  if(!VALID_TABS.includes(name)) name = "overview";
+  document.querySelectorAll(".subnav [role=tab]").forEach(b=>
+    b.setAttribute("aria-selected", b.dataset.tab===name));
+  document.querySelectorAll("main section").forEach(s=>
+    s.hidden = s.id!=="tab-"+name);
+  /* re-render the chart-bearing tabs so animations run when revealed */
+  if(window.__data){
+    if(name==="budget") renderBudget(window.__data);
+    if(name==="tier2")  renderTier2(window.__data);
+  }
+  reapplySearches();
+  if(updateHash && location.hash.slice(1)!==name){
+    history.pushState(null, "", "#"+name);
+  }
+}
+
+document.querySelectorAll(".subnav [role=tab]").forEach(btn=>{
+  btn.addEventListener("click",()=>showTab(btn.dataset.tab, true));
+});
+/* Back/forward buttons and pasted #links */
+window.addEventListener("hashchange", ()=>showTab(location.hash.slice(1), false));
+
+/* ---------- Apply LABELS to headings (single source of truth) ---------- */
+function applyLabels(){
+  const set=(id,txt)=>{ const e=document.getElementById(id); if(e) e.textContent=txt; };
+  set("lbl-subtitle", LABELS.subtitle);
+  set("lbl-budget", LABELS.fiscalYear+" Allocations by Category");
+  set("lbl-senate", "Senator Attendance — "+LABELS.senateTerm);
+  set("lbl-leg", "Legislation Tracker — "+LABELS.session+" Session");
+  set("lbl-t2", "Tier II Funding — Spent to Date ("+LABELS.tier2Year+")");
+  document.querySelectorAll("[data-label-fy]").forEach(e=>e.textContent=LABELS.fiscalYear);
+}
+
+/* ---------- Visible error reporting (no console needed) ---------- */
+function reportError(msg){
+  const b = document.createElement("div");
+  b.className = "err-banner";
+  b.textContent = "⚠ " + msg;
+  document.querySelector("main")?.prepend(b);
+}
+window.addEventListener("error", e=>reportError("Script error: " + e.message));
+
+/* ---------- Init ---------- */
+loadData().then(d=>{
+  window.__data=d;
+  document.getElementById("asof-text").textContent = "Live from public records · updated " + d.asOf;
+  [["Overview",renderOverview],["Stats",renderStats],["Budget",renderBudget],["Senate",renderSenate],["Representation",renderSeats],["Legislation",renderLegislation],["Tier II",renderTier2],["Events",renderEvents]]
+    .forEach(([name,fn])=>{
+      try{ fn(d); }
+      catch(e){ reportError(name+" section failed to render: "+e.message); console.error(e); }
+    });
+  applyLabels();
+  wireTableSearch();
+  /* Deep link: open the tab named in the URL hash, e.g. /usg/#legislation */
+  if(location.hash) showTab(location.hash.slice(1), false);
+}).catch(err=>{
+  reportError("Data load failed entirely: " + err.message);
+  document.getElementById("stat-row").innerHTML =
+    `<div class="stat"><div class="label">Data unavailable</div><div class="sub">Could not load the published spreadsheets. Check the CSV URLs in DATA_SOURCES.</div></div>`;
+  console.error(err);
+});
+</script>
+</body>
+</html>
