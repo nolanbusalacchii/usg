@@ -599,7 +599,7 @@
   <div class="footer-inner">
     <p><strong>Undergraduate Student Government</strong> · Student Union Room 219, Storrs, CT</p>
     <p style="margin-top:6px">Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
-    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v22 — parallel loading + hardening</span></p>
+    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v23 — funding graph hardening</span></p>
   </div>
 </footer>
 
@@ -854,8 +854,9 @@ async function loadData(){
         diag.hint = "This URL is serving the Budget tab, not Tier2 — republish and select the Tier2 tab in the first dropdown.";
       const cats = catsObjs.map(mapTier2Row).filter(r=>r.category && r.amount>0);
       const timeline = tlObjs
-        .map(r=>({date:(r["Date"]||"").trim(), remaining:num(r["Remaining"]), t:new Date((r["Date"]||"").trim()).getTime()}))
-        .filter(r=>r.date && !isNaN(r.t))
+        .filter(r=>(r["Date"]||"").trim() && (r["Remaining"]||"").trim())  /* both cells must be filled */
+        .map(r=>({date:(r["Date"]||"").trim(), remaining:num(r["Remaining"]), t:parseSheetDate((r["Date"]||"").trim())}))
+        .filter(r=>!isNaN(r.t))
         .sort((a,b)=>a.t-b.t);
       diag.catCount = cats.length; diag.tlCount = timeline.length;
       t2 = {cats, timeline};
@@ -914,6 +915,23 @@ function prepEvents(events){
     .filter(e=>!isNaN(e.t)).sort((a,b)=>a.t-b.t);
 }
 const todayT = ()=>{ const t=new Date(); t.setHours(0,0,0,0); return t.getTime(); };
+/* Robust date parser for sheet cells: handles "2026-08-12", "8/12/2026",
+   "8/12/26", and yearless "8/12" (assumed current year — plain Date() would
+   silently read that as the year 2001 and wreck the time axis). */
+function parseSheetDate(s){
+  s = String(s||"").trim();
+  if(!s) return NaN;
+  const t = new Date(s).getTime();
+  if(isNaN(t)) return NaN;
+  /* Yearless "8/12" — Date() silently reads it as the year 2001; pin it to
+     the current year instead. Checked first, before any year validation. */
+  if(/^\d{1,2}[\/\-]\d{1,2}$/.test(s)){
+    const d=new Date(t); d.setFullYear(new Date().getFullYear()); return d.getTime();
+  }
+  const y = new Date(t).getFullYear();
+  if(y < 100){ const d=new Date(t); d.setFullYear(y+2000); return d.getTime(); }  /* "8/12/26" parsed as year 26 */
+  return t;
+}
 const fmt$ = n => "$" + n.toLocaleString("en-US");
 const pct  = (a,b) => b ? Math.round(100*a/b) : 0;
 const STATUS_LABEL = {drafted:"Drafted", passed:"Passed", responded:"Admin responded", implemented:"Implemented", stalled:"Stalled"};
@@ -1075,14 +1093,16 @@ function renderTier2(d){
 
   /* --- Timeline line chart from the Date/Remaining log --- */
   const lineEl = document.getElementById("t2-timeline");
-  if(timeline.length >= 2){
+  if(timeline.length >= 1){
     const W=860,H=300,padL=64,padR=16,padT=14,padB=34;
     const iw=W-padL-padR, ih=H-padT-padB;
-    const tMin=timeline[0].t, tMax=timeline[timeline.length-1].t, span=Math.max(1,tMax-tMin);
-    const x=p=>padL + iw*(p.t-tMin)/span;
+    const single = timeline.length===1;
+    const tMin=timeline[0].t, tMax=timeline[timeline.length-1].t;
+    const span=Math.max(1,tMax-tMin);
+    const x=p=> single ? padL+iw/2 : padL + iw*(p.t-tMin)/span;
     const y=v=>padT + ih*(1 - Math.min(v,TIER2_BUDGET)/TIER2_BUDGET);
     const line = timeline.map((p,i)=>`${i?"L":"M"}${x(p).toFixed(1)},${y(p.remaining).toFixed(1)}`).join(" ");
-    const area = line + ` L${x(timeline[timeline.length-1]).toFixed(1)},${y(0)} L${x(timeline[0]).toFixed(1)},${y(0)} Z`;
+    const area = single ? "" : line + ` L${x(timeline[timeline.length-1]).toFixed(1)},${y(0)} L${x(timeline[0]).toFixed(1)},${y(0)} Z`;
     const grid = [0,.25,.5,.75,1].map(f=>{
       const v=TIER2_BUDGET*f, yy=y(v).toFixed(1);
       return `<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="#E4E7EC" stroke-width="1"/>
@@ -1091,15 +1111,17 @@ function renderTier2(d){
     lineEl.innerHTML = `
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Remaining Tier II funds over time">
         ${grid}
-        <path d="${area}" fill="rgba(0,14,47,0.07)"/>
-        <path d="${line}" fill="none" stroke="#000E2F" stroke-width="2.5"/>
-        ${timeline.map(p=>`<circle cx="${x(p).toFixed(1)}" cy="${y(p.remaining).toFixed(1)}" r="3.5" fill="#000E2F"><meta name="description" content="Live public records of the UConn Undergraduate Student Government: budget, Tier II funding, Senate attendance, representation, legislation, and events.">
-<title>${shortDate(p.t)}: ${fmt$(p.remaining)}</title></circle>`).join("")}
+        ${area ? `<path d="${area}" fill="rgba(0,14,47,0.07)"/>` : ""}
+        ${single ? "" : `<path d="${line}" fill="none" stroke="#000E2F" stroke-width="2.5"/>`}
+        ${timeline.map(p=>`<circle cx="${x(p).toFixed(1)}" cy="${y(p.remaining).toFixed(1)}" r="${single?5:3.5}" fill="#000E2F"><title>${shortDate(p.t)}: ${fmt$(p.remaining)}</title></circle>`).join("")}
+        ${single ? `<text x="${x(timeline[0]).toFixed(1)}" y="${(y(timeline[0].remaining)-14).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="#000E2F" font-family="Montserrat,sans-serif">${shortDate(tMin)} · ${fmt$(timeline[0].remaining)}</text>` : ""}
         <text x="${padL}" y="${H-10}" font-size="11" fill="#7C878E" font-family="Montserrat,sans-serif">${shortDate(tMin)}</text>
-        <text x="${W-padR}" y="${H-10}" text-anchor="end" font-size="11" fill="#7C878E" font-family="Montserrat,sans-serif">${shortDate(tMax)}</text>
-      </svg>`;
+        ${single ? "" : `<text x="${W-padR}" y="${H-10}" text-anchor="end" font-size="11" fill="#7C878E" font-family="Montserrat,sans-serif">${shortDate(tMax)}</text>`}
+      </svg>
+      ${single ? `<p class="desc" style="color:var(--uconn-grey);margin-top:8px">One entry logged so far — the line appears with the next dated entry in the Tier2 tab's log (Date + Remaining columns).</p>` : ""}`;
   } else {
-    lineEl.innerHTML = `<p class="desc" style="color:var(--uconn-grey)">The line graph appears once at least two dated entries exist in the timeline log (Date + Remaining columns of the Tier2 tab).</p>`;
+    const dgc = window.__t2diag || {};
+    lineEl.innerHTML = `<p class="desc" style="color:var(--uconn-grey)">No usable timeline entries found in the Tier2 tab's log yet. Each log row needs BOTH a Date and a Remaining amount filled in${dgc.headerTl===false ? " — and the log's column headers must read exactly \u201cDate\u201d and \u201cRemaining\u201d" : ""}. Rows missing either cell are skipped.</p>`;
   }
 
   /* --- Category donut + legend + table --- */
