@@ -257,6 +257,47 @@
     .ev-badge .d{font-size:20px}
   }
 
+  /* ============ Table search ============ */
+  .tbl-search{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .tbl-search input{
+    font-family:'Source Sans 3',sans-serif;font-size:14.5px;
+    padding:9px 12px;border:1px solid var(--line);background:#fff;color:var(--ink);
+    width:100%;max-width:380px;
+  }
+  .tbl-search input:focus{outline:2px solid var(--uconn-navy);outline-offset:-1px}
+  .tbl-count{font-size:13px;color:var(--uconn-grey);font-weight:600}
+  tr.filtered-out{display:none}
+  .no-results td{padding:16px 14px;color:var(--uconn-grey);font-size:14.5px}
+
+  /* ============ Overview ============ */
+  .ov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;max-width:960px}
+  .ov-card{border:1px solid var(--line);border-top:3px solid var(--uconn-navy);padding:18px 20px}
+  .ov-card .k{
+    font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--uconn-grey);
+  }
+  .ov-card .v{
+    font-family:'Montserrat',sans-serif;font-weight:800;color:var(--uconn-navy);
+    font-size:28px;line-height:1.15;margin-top:5px;font-variant-numeric:tabular-nums;
+  }
+  .ov-card .s{font-size:13.5px;color:var(--uconn-grey);margin-top:2px}
+  .ov-next{
+    border:1px solid var(--line);border-left:4px solid var(--uconn-navy);
+    padding:18px 22px;max-width:860px;background:var(--blue-t);
+  }
+  .ov-next .when{
+    font-family:'Montserrat',sans-serif;font-size:11.5px;font-weight:700;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--link);
+  }
+  .ov-next .what{font-family:'Montserrat',sans-serif;font-weight:700;font-size:19px;color:var(--uconn-navy);margin-top:4px}
+  .ov-next .where{font-size:14.5px;color:#4B5563;margin-top:3px}
+  .ov-wins{display:flex;flex-direction:column;gap:0;max-width:860px;border-top:1px solid var(--line)}
+  .ov-win{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);align-items:baseline}
+  .ov-win .tick{color:var(--green);font-weight:700;flex:none}
+  .ov-win .wt{font-size:15px;color:var(--ink)}
+  .ov-win .wn{font-size:13.5px;color:var(--uconn-grey);margin-top:2px}
+  .ov-empty{color:var(--uconn-grey);font-size:15px}
+
   /* ============ Footer (UConn navy) ============ */
   footer{background:var(--uconn-navy);color:#B9C1CE;margin-top:20px}
   .footer-inner{max-width:1100px;margin:0 auto;padding:30px 24px 40px;font-size:14px}
@@ -280,7 +321,8 @@
 
 <div class="subnav">
   <div class="subnav-inner" role="tablist" aria-label="Dashboard sections">
-    <button role="tab" aria-selected="true"  data-tab="budget">Budget</button>
+    <button role="tab" aria-selected="true"  data-tab="overview">Overview</button>
+    <button role="tab" aria-selected="false" data-tab="budget">Budget</button>
     <button role="tab" aria-selected="false" data-tab="senate">Senate Attendance</button>
     <button role="tab" aria-selected="false" data-tab="legislation">Legislation</button>
     <button role="tab" aria-selected="false" data-tab="tier2">Tier II Funding</button>
@@ -291,11 +333,29 @@
 <div class="stats-band"><div id="stat-row"></div></div>
 
 <main>
-  <!-- ============ BUDGET ============ -->
-  <section id="tab-budget" role="tabpanel">
+  <!-- ============ OVERVIEW ============ -->
+  <section id="tab-overview" role="tabpanel">
     <div class="block">
-      <h2>FY27 Allocations by Category</h2>
-      <p class="desc">Student activity fee funding allocated by USG and spending to date, drawn from the Office of the Comptroller.</p>
+      <h2>At a Glance</h2>
+      <p class="desc">A summary of what the Undergraduate Student Government is doing this year. Every figure below comes from the public spreadsheets that feed this site.</p>
+      <div id="ov-cards" class="ov-grid"></div>
+    </div>
+    <div class="block">
+      <h2>What's Next</h2>
+      <div id="ov-next"></div>
+    </div>
+    <div class="block">
+      <h2>Recent Wins</h2>
+      <p class="desc">Legislation that made it all the way to implementation.</p>
+      <div id="ov-wins"></div>
+    </div>
+  </section>
+
+  <!-- ============ BUDGET ============ -->
+  <section id="tab-budget" role="tabpanel" hidden>
+    <div class="block">
+      <h2>FY26 Allocations by Category</h2>
+      <p class="desc">Student activity fee funding allocated by USG and spending to date, drawn from the Funding Board ledger.</p>
       <div class="bchart" id="budget-bars"></div>
       <div class="legend">
         <span><span class="swatch" style="background:#C3CCDB"></span>Allocated</span>
@@ -304,7 +364,8 @@
     </div>
     <div class="block">
       <h2>Line Items</h2>
-      <p class="desc"> For more information about a specific line item, please reach out to the Office of the Comptroller</p>
+      <p class="desc">Every allocation over $1,000. The full ledger is available from the Comptroller's office.</p>
+      <div class="tbl-search"><input type="search" id="search-budget" data-table="budget-table" placeholder="Search line items or categories…" aria-label="Search budget line items"><span class="tbl-count" id="count-budget-table"></span></div>
       <div class="table-wrap">
         <table id="budget-table">
           <thead><tr><th>Category</th><th>Line item</th><th style="text-align:right">Allocated</th><th style="text-align:right">Spent</th><th style="text-align:right">% used</th></tr></thead>
@@ -319,6 +380,7 @@
     <div class="block">
       <h2>Senator Attendance — Spring 2026</h2>
       <p class="desc">Attendance at regular Senate meetings. Senators below 60% are flagged under the USG bylaws attendance policy.</p>
+      <div class="tbl-search"><input type="search" id="search-senate" data-table="senate-table" placeholder="Search by senator, constituency, or committee…" aria-label="Search senators"><span class="tbl-count" id="count-senate-table"></span></div>
       <div class="table-wrap">
         <table id="senate-table">
           <thead><tr><th>Senator</th><th>Constituency</th><th>Committee</th><th style="text-align:right">Meetings</th><th>Attendance</th></tr></thead>
@@ -333,6 +395,7 @@
     <div class="block">
       <h2>Legislation Tracker — 2025–26 Session</h2>
       <p class="desc">Every resolution and bill, tracked past the vote: Drafted → Passed → Administration responded → Implemented.</p>
+      <div class="tbl-search"><input type="search" id="search-leg" data-table="leg-table" placeholder="Search by bill number, title, sponsor, or status…" aria-label="Search legislation"><span class="tbl-count" id="count-leg-table"></span></div>
       <div class="table-wrap">
         <table id="leg-table">
           <thead><tr><th>Bill</th><th>Title</th><th>Sponsor</th><th>Date</th><th>Lifecycle</th><th>Status</th><th>Outcome note</th></tr></thead>
@@ -351,7 +414,7 @@
     <div id="t2-content" style="display:none">
       <div class="block">
         <h2>Tier II Funding — Spent to Date</h2>
-        <p class="desc">Total Tier II student organization funding disbursed this fiscal year out of the $900,000 allocation.</p>
+        <p class="desc">Total Tier II student organization funding disbursed this fiscal year, out of the $900,000 allocation. Summed live from the category totals in the spreadsheet.</p>
         <div class="t2-hero">
           <div class="t2-big">
             <div id="t2-counter" class="t2-amount">$0</div>
@@ -365,7 +428,7 @@
       </div>
       <div class="block">
         <h2>Remaining Funds</h2>
-        <p class="desc">The $900,000 Tier II allocation: spent so far in navy, remaining in light blue. Below, you can see our remaining funding in graph form.</p>
+        <p class="desc">The $900,000 Tier II allocation: spent so far in navy, remaining in light blue — and below, the balance over time from the timeline log.</p>
         <div id="t2-gauge"></div>
         <div id="t2-timeline" class="t2-chart" style="margin-top:26px"></div>
       </div>
@@ -396,7 +459,7 @@
     <div id="ev-content" style="display:none">
       <div class="block">
         <h2>Upcoming Events</h2>
-        <p class="desc">USG meetings, programs, and deadlines. Updated weekly. To share an event idea, please reach out to the Office of the President!</p>
+        <p class="desc">USG meetings, programs, and deadlines. Updated from the Events tab of the public records spreadsheet.</p>
         <div id="ev-upcoming"></div>
       </div>
       <div class="block" id="ev-past-block">
@@ -412,8 +475,8 @@
 <footer>
   <div class="footer-inner">
     <p><strong>Undergraduate Student Government</strong> · Student Union Room 219, Storrs, CT</p>
-    <p style="margin-top:6px">Maintained by the Chief of Staff, Nolan Busalacchi. Data is updated after each Senate meeting and biweekly for budget figures. Report an error: preschiefofstaff@usg.uconn.edu</p>
-    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v15 — events + sorted line items</span></p>
+    <p style="margin-top:6px">Maintained by the Office of the Chief of Staff. Data is updated after each Senate meeting and monthly for budget figures. Report an error: usg@uconn.edu</p>
+    <p class="fine">Source spreadsheets are published publicly and feed this page directly. <span style="opacity:.6">build v16 — overview, search, deep links</span></p>
   </div>
 </footer>
 
@@ -443,7 +506,7 @@ const DATA_SOURCES = {
   /* Events tab: import the pre-built Events tab (or create one with headers
      Date, Event, Time, Location, Description), publish it as CSV, and paste
      its URL here. */
-  events:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTClSwQni1YdTLOGtyPnt1A3hOhr0KyK0_KF2PVQcSeWmZs3OF-yfjeCdzEJTNAkxL7le7rpP6xBIBI/pub?gid=1814470009&single=true&output=csv",
+  events:      "PASTE_EVENTS_CSV_URL_HERE",
   asOf:        "July 28, 2026"
 };
 
@@ -936,6 +999,95 @@ function renderEvents(d){
   }
 }
 
+/* ---------- Render: overview (landing tab) ---------- */
+function renderOverview(d){
+  const alloc = d.budget.reduce((s,r)=>s+r.allocated,0);
+  const spent = d.budget.reduce((s,r)=>s+r.spent,0);
+  const senators = d.senate.length;
+  const withMtgs = d.senate.filter(r=>r.total>0);
+  const att = withMtgs.length
+    ? pct(withMtgs.reduce((s,r)=>s+r.attended,0), withMtgs.reduce((s,r)=>s+r.total,0))
+    : null;
+  const bills = d.legislation.length;
+  const impl = d.legislation.filter(r=>r.status==="implemented").length;
+  const t2spent = d.tier2 ? (d.tier2.cats||[]).reduce((s,r)=>s+r.amount,0) : null;
+
+  const cards = [
+    {k:"Budget Allocated", v:fmt$(alloc), s:`${pct(spent,alloc)}% spent to date`},
+    {k:"Senators Seated", v:String(senators), s: att!==null ? `${att}% average attendance` : "Attendance logging begins with the first meeting"},
+    {k:"Bills Tracked", v:String(bills), s:`${impl} fully implemented`},
+  ];
+  if(t2spent!==null) cards.push({k:"Tier II Funding Spent", v:fmt$(t2spent), s:`${fmt$(Math.max(0,TIER2_BUDGET-t2spent))} remaining of ${fmt$(TIER2_BUDGET)}`});
+  document.getElementById("ov-cards").innerHTML = cards.map(c=>
+    `<div class="ov-card"><div class="k">${c.k}</div><div class="v">${c.v}</div><div class="s">${c.s}</div></div>`).join("");
+
+  /* Next event */
+  const nextEl = document.getElementById("ov-next");
+  const evs = (d.events||[]).map(e=>({...e,t:e.t ?? new Date(e.date).getTime()}))
+                .filter(e=>!isNaN(e.t)).sort((a,b)=>a.t-b.t);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const next = evs.find(e=>e.t>=today.getTime());
+  if(next){
+    const when = new Date(next.t).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+    const where = [next.time,next.location].filter(Boolean).join(" · ");
+    nextEl.innerHTML = `<div class="ov-next">
+      <div class="when">${when}</div>
+      <div class="what">${next.event}</div>
+      ${where?`<div class="where">${where}</div>`:""}
+      ${next.desc?`<div class="where">${next.desc}</div>`:""}
+    </div>`;
+  } else {
+    nextEl.innerHTML = `<p class="ov-empty">No upcoming events posted.${d.events?"":" Connect the Events tab to show them here."}</p>`;
+  }
+
+  /* Recent implemented legislation */
+  const wins = d.legislation.filter(r=>r.status==="implemented").slice(-5).reverse();
+  document.getElementById("ov-wins").innerHTML = wins.length
+    ? `<div class="ov-wins">` + wins.map(w=>`<div class="ov-win"><span class="tick">✓</span>
+        <div><div class="wt">${w.title}</div>${w.note?`<div class="wn">${w.note}</div>`:""}</div></div>`).join("") + `</div>`
+    : `<p class="ov-empty">No legislation has reached implementation yet this session.</p>`;
+}
+
+/* ---------- Table search (pure display filter — never touches data) ---------- */
+function wireTableSearch(){
+  document.querySelectorAll(".tbl-search input").forEach(input=>{
+    const tableId = input.dataset.table;
+    const countEl = document.getElementById("count-"+tableId);
+    const apply = ()=>{
+      const q = input.value.trim().toLowerCase();
+      const tbody = document.querySelector("#"+tableId+" tbody");
+      if(!tbody) return;
+      const rows = [...tbody.querySelectorAll("tr")].filter(r=>!r.classList.contains("no-results"));
+      let shown = 0;
+      rows.forEach(r=>{
+        const hit = !q || r.textContent.toLowerCase().includes(q);
+        r.classList.toggle("filtered-out", !hit);
+        if(hit) shown++;
+      });
+      /* "no results" row */
+      let nr = tbody.querySelector("tr.no-results");
+      if(shown===0 && q){
+        if(!nr){
+          nr = document.createElement("tr");
+          nr.className = "no-results";
+          const cols = document.querySelectorAll("#"+tableId+" thead th").length || 1;
+          nr.innerHTML = `<td colspan="${cols}">No matches for “${q.replace(/</g,"&lt;")}”.</td>`;
+          tbody.appendChild(nr);
+        } else {
+          nr.querySelector("td").innerHTML = `No matches for “${q.replace(/</g,"&lt;")}”.`;
+          nr.style.display = "";
+        }
+      } else if(nr){ nr.style.display = "none"; }
+      countEl.textContent = q ? `${shown} of ${rows.length} shown` : "";
+    };
+    input.addEventListener("input", apply);
+    input.__apply = apply;   /* re-applied after re-renders */
+  });
+}
+function reapplySearches(){
+  document.querySelectorAll(".tbl-search input").forEach(i=>{ if(i.__apply && i.value) i.__apply(); });
+}
+
 /* ---------- Render: legislation ---------- */
 function pipeline(status){
   if(status==="stalled"){
@@ -957,15 +1109,31 @@ function renderLegislation(d){
     <td style="color:#4B5563;max-width:280px">${r.note}</td></tr>`).join("");
 }
 
-/* ---------- Tabs ---------- */
+/* ---------- Tabs + deep links ---------- */
+const VALID_TABS = ["overview","budget","senate","legislation","tier2","events"];
+
+function showTab(name, updateHash){
+  if(!VALID_TABS.includes(name)) name = "overview";
+  document.querySelectorAll(".subnav [role=tab]").forEach(b=>
+    b.setAttribute("aria-selected", b.dataset.tab===name));
+  document.querySelectorAll("main section").forEach(s=>
+    s.hidden = s.id!=="tab-"+name);
+  /* re-render the chart-bearing tabs so animations run when revealed */
+  if(window.__data){
+    if(name==="budget") renderBudget(window.__data);
+    if(name==="tier2")  renderTier2(window.__data);
+  }
+  reapplySearches();
+  if(updateHash && location.hash.slice(1)!==name){
+    history.pushState(null, "", "#"+name);
+  }
+}
+
 document.querySelectorAll(".subnav [role=tab]").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    document.querySelectorAll(".subnav [role=tab]").forEach(b=>b.setAttribute("aria-selected", b===btn));
-    document.querySelectorAll("main section").forEach(s=>s.hidden = s.id!=="tab-"+btn.dataset.tab);
-    if(btn.dataset.tab==="budget" && window.__data) renderBudget(window.__data);
-    if(btn.dataset.tab==="tier2" && window.__data) renderTier2(window.__data);
-  });
+  btn.addEventListener("click",()=>showTab(btn.dataset.tab, true));
 });
+/* Back/forward buttons and pasted #links */
+window.addEventListener("hashchange", ()=>showTab(location.hash.slice(1), false));
 
 /* ---------- Visible error reporting (no console needed) ---------- */
 function reportError(msg){
@@ -980,11 +1148,14 @@ window.addEventListener("error", e=>reportError("Script error: " + e.message));
 loadData().then(d=>{
   window.__data=d;
   document.getElementById("asof-text").textContent = "Data as of " + d.asOf;
-  [["Stats",renderStats],["Budget",renderBudget],["Senate",renderSenate],["Legislation",renderLegislation],["Tier II",renderTier2],["Events",renderEvents]]
+  [["Overview",renderOverview],["Stats",renderStats],["Budget",renderBudget],["Senate",renderSenate],["Legislation",renderLegislation],["Tier II",renderTier2],["Events",renderEvents]]
     .forEach(([name,fn])=>{
       try{ fn(d); }
       catch(e){ reportError(name+" section failed to render: "+e.message); console.error(e); }
     });
+  wireTableSearch();
+  /* Deep link: open the tab named in the URL hash, e.g. /usg/#legislation */
+  if(location.hash) showTab(location.hash.slice(1), false);
 }).catch(err=>{
   reportError("Data load failed entirely: " + err.message);
   document.getElementById("stat-row").innerHTML =
